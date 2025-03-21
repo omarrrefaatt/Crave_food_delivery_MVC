@@ -1,0 +1,39 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.sln.cache
+*.sln.docstates
+*.pidb
+*.svclog
+*.pdb
+
+# ASP.NET Core
+appsettings*.json
+appsettings*.Development.json
+
+# Visual Studio
+.vs/
+*.vscode/
+*.DS_Store
+*.coverage
+
+# NuGet
+*.nupkg
+packages/
+.nuget/
+
+# Logs
+*.log
+
+# Entity Framework
+Migrations/
+
+# Secrets
+.env
+secrets.json
+
+# Other
+*.key
+*.crt
