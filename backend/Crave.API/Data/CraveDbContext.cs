@@ -56,7 +56,7 @@ namespace Crave.API.Data
                 .HasForeignKey(oi => oi.OrderId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // One-to-Many: User -> Reviews
+            // One-to-Many: User -> Reviewss
             modelBuilder.Entity<User>()
                 .HasMany(u => u.Reviews)
                 .WithOne(r => r.User)
