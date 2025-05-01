@@ -1,4 +1,5 @@
 using Crave.API.Data;
+using Crave.API.services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
@@ -15,6 +16,9 @@ Console.WriteLine(builder.Configuration.GetConnectionString("defaultConnection")
 // Register DbContext with SQL Server
 builder.Services.AddDbContext<CraveDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("defaultConnection")));
+
+// Register services
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 // Add CORS policy
 builder.Services.AddCors(options =>
@@ -42,6 +46,11 @@ builder.Services.AddSwaggerGen(c =>
             Email = "support@crave.com"
         }
     });
+    
+    // Enable XML comments for Swagger
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    c.IncludeXmlComments(xmlPath);
 });
 
 var app = builder.Build();
@@ -50,7 +59,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Crave API v1"));
+    app.UseSwaggerUI(c => 
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Crave API v1");
+        c.RoutePrefix = "swagger"; // This makes Swagger the default page
+    });
     
     // Test endpoint only available in development
 app.MapGet("/test-connection", async (CraveDbContext context) =>
@@ -92,13 +105,17 @@ app.MapGet("/test-connection", async (CraveDbContext context) =>
 });
 }
 
+// Important: These middleware components must be in this order
 app.UseHttpsRedirection();
-
-// Apply CORS policy
+app.UseStaticFiles();
+app.UseRouting();
 app.UseCors("AllowAll");
-
 app.UseAuthorization();
 
+// Map controllers
 app.MapControllers();
+
+// Add a fallback route for the root path that redirects to Swagger
+app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.Run();
