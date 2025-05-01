@@ -5,16 +5,17 @@ using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 using Crave.API.Services.Interfaces;
 using Crave.API.Services.Implementation;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers(options => 
 {
-    // Removed invalid ApiControllerAttribute as it is not defined
 }).AddJsonOptions(options => 
 {
-    // Handle JSON serialization cycles in entity relationships
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
 });
 Console.WriteLine(builder.Configuration.GetConnectionString("defaultConnection"));
@@ -25,6 +26,54 @@ builder.Services.AddDbContext<CraveDbContext>(options =>
 // Register services
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICardService, CardService>();
+
+// Add JWT Authentication
+var jwtKey = builder.Configuration["JwtSettings:SecretKey"];
+var jwtIssuer = builder.Configuration["JwtSettings:Issuer"] ?? "CraveApi";
+var jwtAudience = builder.Configuration["JwtSettings:Audience"] ?? "CraveClients";
+if (string.IsNullOrEmpty(jwtKey))
+{
+    throw new InvalidOperationException("JWT Key is missing in configuration. Please add Jwt:Key to your appsettings.json file.");
+}
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"Auth failed: {context.Exception.Message}");
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine("Token validated successfully");
+            return Task.CompletedTask;
+        }
+    };
+    
+    // Existing validation parameters
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+        ClockSkew = TimeSpan.FromMinutes(5)
+    };
+});
+
+// Register JwtService
+builder.Services.AddScoped<JwtService>();
 
 // Add CORS policy
 builder.Services.AddCors(options =>
@@ -57,6 +106,29 @@ builder.Services.AddSwaggerGen(c =>
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     c.IncludeXmlComments(xmlPath);
+        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
 
 var app = builder.Build();
@@ -116,6 +188,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 app.UseCors("AllowAll");
+
+// Add Authentication middleware before Authorization
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Map controllers
