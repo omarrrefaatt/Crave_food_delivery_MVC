@@ -8,12 +8,6 @@ namespace Crave.API.DTOS.User
         /// <summary>
         /// User's unique identifier
         /// </summary>
-        public int Id { get; set; }
-        
-        /// <summary>
-        /// User's id
-        /// </summary>
-        /// 
         public int UserId { get; set; }
         
         /// <summary>
@@ -45,9 +39,15 @@ namespace Crave.API.DTOS.User
         /// User's zip/postal code
         /// </summary>
         public string ZipCode { get; set; } = string.Empty;
+
         /// <summary>
-        /// User's card id
+        /// User's card ID
         /// </summary>
-        public int CardId { get; set; }
+        public int? CardId { get; set; }
+        
+        /// <summary>
+        /// JWT authentication token
+        /// </summary>
+        public string Token { get; set; } = string.Empty;
     }
 }

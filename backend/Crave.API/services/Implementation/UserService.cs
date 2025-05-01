@@ -10,6 +10,7 @@ using Crave.API.DTOS.User;
 using Microsoft.EntityFrameworkCore;
 using Crave.API.Services.Interfaces;
 using Microsoft.Extensions.Logging;
+using Crave.API.Services.Implementation;
 
 namespace Crave.API.Services.Implementation
 {
@@ -17,11 +18,13 @@ namespace Crave.API.Services.Implementation
     {
         private readonly CraveDbContext _context;
         private readonly ILogger<UserService> _logger;
+        private readonly JwtService _jwtService;
 
-        public UserService(CraveDbContext context, ILogger<UserService> logger)
+        public UserService(CraveDbContext context, ILogger<UserService> logger, JwtService jwtService)
         {
             _context = context;
             _logger = logger;
+            _jwtService = jwtService;
         }
 
         public async Task<IEnumerable<UserResponse>> GetAllUsersAsync()
@@ -74,7 +77,7 @@ namespace Crave.API.Services.Implementation
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error creating user: {Message}", ex.Message);
-throw new InvalidOperationException($"Could not create user. Please try again later. {ex.Message}");
+                throw new InvalidOperationException($"Could not create user. Please try again later. {ex.Message}");
             }
         }
 
@@ -166,8 +169,15 @@ throw new InvalidOperationException($"Could not create user. Please try again la
                     return null;
                 }
 
+                // Generate JWT token
+                var token = _jwtService.GenerateToken(user);
+
                 _logger.LogInformation("User authenticated successfully: {Email}", request.Email);
-                return MapUserToResponse(user);
+                
+                // Return user with token
+                var response = MapUserToResponse(user);
+                response.Token = token;
+                return response;
             }
             catch (Exception ex)
             {
@@ -188,6 +198,7 @@ throw new InvalidOperationException($"Could not create user. Please try again la
                 Address = user.Address,
                 ZipCode = user.ZipCode,
                 CardId = (int)(user.CardId ?? 0)
+                // Token will be set in AuthenticateAsync
             };
         }
 
