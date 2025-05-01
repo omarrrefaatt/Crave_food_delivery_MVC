@@ -3,11 +3,16 @@ using Crave.API.services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
+using Crave.API.Services.Interfaces;
+using Crave.API.Services.Implementation;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddControllers().AddJsonOptions(options => 
+builder.Services.AddControllers(options => 
+{
+    // Removed invalid ApiControllerAttribute as it is not defined
+}).AddJsonOptions(options => 
 {
     // Handle JSON serialization cycles in entity relationships
     options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
@@ -19,6 +24,7 @@ builder.Services.AddDbContext<CraveDbContext>(options =>
 
 // Register services
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // Add CORS policy
 builder.Services.AddCors(options =>
