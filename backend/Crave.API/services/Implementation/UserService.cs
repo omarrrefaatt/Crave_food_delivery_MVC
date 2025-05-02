@@ -186,6 +186,8 @@ namespace Crave.API.Services.Implementation
             }
         }
 
+
+
         private static UserResponse MapUserToResponse(User user)
         {
             return new UserResponse

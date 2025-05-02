@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using Crave.API.DTOS.Card;
+using Crave.API.Services.Implementation;
 using Crave.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +13,13 @@ namespace Crave.API.Controllers
     public class CardsController : ControllerBase
     {
         private readonly ICardService _cardService;
+        private readonly IUserService _userService;
         private readonly ILogger<CardsController> _logger;
 
-        public CardsController(ICardService cardService, ILogger<CardsController> logger)
+        public CardsController(ICardService cardService,IUserService userService, ILogger<CardsController> logger)
         {
             _cardService = cardService;
+            _userService = userService;
             _logger = logger;
         }
 
@@ -96,22 +100,33 @@ namespace Crave.API.Controllers
         /// Creates a new card
         /// </summary>
         /// <param name="request">Card creation data</param>
-        /// <param name="userId">Optional user ID to associate with the card</param>
         /// <returns>Created card information</returns>
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<CardResponse>> CreateCard([FromBody] CreateCardRequest request, [FromQuery] int userId = 0)
+        [Authorize]
+        public async Task<ActionResult<CardResponse>> CreateCard([FromBody] CreateCardRequest request)
         {
             try
             {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if(string.IsNullOrEmpty(userId))
+                {
+                    return BadRequest("User ID is required");
+                }
+                if (!int.TryParse(userId, out int parsedUserId))
+                {
+                    return BadRequest("Invalid User ID");
+                }
+                
+
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
 
-                var card = await _cardService.CreateCardAsync(request, userId);
+                var card = await _cardService.CreateCardAsync(request, int.Parse(userId));
                 return CreatedAtAction(nameof(GetCardById), new { id = card.CardId }, card);
             }
             catch (Exception ex)
@@ -165,18 +180,38 @@ namespace Crave.API.Controllers
         [HttpDelete("{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
         public async Task<IActionResult> DeleteCard(int id)
         {
             try
             {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return BadRequest("User ID is required");
+                }
+                
+                var user = await _userService.GetUserByIdAsync(int.Parse(userId));
+
+                if (user == null)
+                {
+                    _logger.LogWarning("User with ID {UserId} not found", userId);
+                    return NotFound($"User with ID {userId} not found");
+                }
+                Console.WriteLine($"User ID: {userId}, Card ID: {id}");
+            
+                if (user.CardId != id){
+                    _logger.LogWarning("User {UserId} attempted to delete card {CardId} which they don't own", userId, id);
+                    return Forbid("You are not authorized to delete this card");
+                }
                 var result = await _cardService.DeleteCardAsync(id);
                 if (!result)
                 {
                     _logger.LogWarning("Card with ID {CardId} not found for deletion", id);
                     return NotFound($"Card with ID {id} not found");
                 }
-
                 return NoContent();
             }
             catch (Exception ex)
