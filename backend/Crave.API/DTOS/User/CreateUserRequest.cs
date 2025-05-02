@@ -28,6 +28,13 @@ namespace Crave.API.DTOS.User
         [Required(ErrorMessage = "Password is required")]
         [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be between 6 and 100 characters")]
         public string Password { get; set; } = string.Empty;
+
+        /// <summary>
+        /// User's password
+        /// </summary>
+        [Required(ErrorMessage = "Password is required")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be between 6 and 100 characters")]
+        public string confirmPassword { get; set; } = string.Empty;
         
         /// <summary>
         /// User's role (e.g., Customer, Admin)

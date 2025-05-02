@@ -42,6 +42,48 @@ namespace Crave.API.Controllers
             }
         }
 
+
+        /// <summary>
+        /// update password
+        /// </summary>
+        /// <returns>no content on success</returns>
+        [HttpPut("update-password")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
+        
+        public async Task<ActionResult<IEnumerable<UserResponse>>> UpdatePassword([FromBody]ChangePasswordRequest request)
+        {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null)
+        {
+            return BadRequest("User ID not found in claims");
+        }
+
+        try
+        {
+            var result = await _userService.ChangePasswordAsync(int.Parse(userId), request);
+            if (result)
+            {
+                return Ok(new { message = "Password changed successfully." });
+            }
+            else
+            {
+                return NotFound(new { message = "User not found." });
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "An unexpected error occurred." });
+        }
+        }
+
+
         /// <summary>
         /// Gets a user by ID
         /// </summary>
