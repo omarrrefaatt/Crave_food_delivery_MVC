@@ -12,6 +12,5 @@ namespace Crave.API.Services.Interfaces
         Task<bool> DeleteUserAsync(int userId);
         Task<UserResponse?> AuthenticateAsync(LoginRequest request);
         Task<bool> ChangePasswordAsync(int userId, ChangePasswordRequest request);
-  
     }
 }

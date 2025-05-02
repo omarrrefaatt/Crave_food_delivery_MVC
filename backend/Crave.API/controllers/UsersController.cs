@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Crave.API.Data.Entities;
 
+
 namespace Crave.API.Controllers
 {
     [ApiController]
@@ -41,6 +42,7 @@ namespace Crave.API.Controllers
                 return StatusCode(500, "An error occurred while retrieving users");
             }
         }
+
 
 
         /// <summary>
@@ -82,6 +84,7 @@ namespace Crave.API.Controllers
             return StatusCode(500, new { message = "An unexpected error occurred." });
         }
         }
+
 
 
         /// <summary>
@@ -209,6 +212,7 @@ namespace Crave.API.Controllers
                 return StatusCode(500, "An error occurred during login");
             }
         }
+
         
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -238,6 +242,7 @@ namespace Crave.API.Controllers
                 user
             });
         }
+
 
         /// <summary>
         /// Updates a user

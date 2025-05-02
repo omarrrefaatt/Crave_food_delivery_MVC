@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Crave.API.DTOS.Card;
 using Crave.API.Services.Implementation;
+
 using Crave.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -13,6 +14,7 @@ namespace Crave.API.Controllers
     public class CardsController : ControllerBase
     {
         private readonly ICardService _cardService;
+
         private readonly IUserService _userService;
         private readonly ILogger<CardsController> _logger;
 
@@ -105,6 +107,7 @@ namespace Crave.API.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
         [Authorize]
         public async Task<ActionResult<CardResponse>> CreateCard([FromBody] CreateCardRequest request)
         {
@@ -126,7 +129,9 @@ namespace Crave.API.Controllers
                     return BadRequest(ModelState);
                 }
 
+
                 var card = await _cardService.CreateCardAsync(request, int.Parse(userId));
+
                 return CreatedAtAction(nameof(GetCardById), new { id = card.CardId }, card);
             }
             catch (Exception ex)
@@ -183,10 +188,12 @@ namespace Crave.API.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Authorize]
+
         public async Task<IActionResult> DeleteCard(int id)
         {
             try
             {
+
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -206,12 +213,14 @@ namespace Crave.API.Controllers
                     _logger.LogWarning("User {UserId} attempted to delete card {CardId} which they don't own", userId, id);
                     return Forbid("You are not authorized to delete this card");
                 }
+
                 var result = await _cardService.DeleteCardAsync(id);
                 if (!result)
                 {
                     _logger.LogWarning("Card with ID {CardId} not found for deletion", id);
                     return NotFound($"Card with ID {id} not found");
                 }
+
                 return NoContent();
             }
             catch (Exception ex)

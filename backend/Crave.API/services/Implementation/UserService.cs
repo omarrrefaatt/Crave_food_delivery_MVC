@@ -1,3 +1,4 @@
+
 using System.Security.Cryptography;
 using Crave.API.Data;
 using Crave.API.Data.Entities;
@@ -27,6 +28,7 @@ namespace Crave.API.Services.Implementation
             var users = await _context.Users.ToListAsync();
             return users.Select(MapUserToResponse);
         }
+
         public async Task<bool> ChangePasswordAsync(int userId, ChangePasswordRequest request)
         {
             try
@@ -57,6 +59,7 @@ namespace Crave.API.Services.Implementation
             }
         }
 
+
         public async Task<UserResponse?> GetUserByIdAsync(int userId)
         {
             var user = await _context.Users.FindAsync(userId);
@@ -79,6 +82,7 @@ namespace Crave.API.Services.Implementation
                 {
                     throw new InvalidOperationException("Email is already registered");
                 }
+
                 if (await _context.Users.AnyAsync(u => u.Phone.ToLower() == request.Phone.ToLower()))
                 {
                     throw new InvalidOperationException("Phone number is already registered");
@@ -100,6 +104,7 @@ namespace Crave.API.Services.Implementation
                 {
                     Name = request.Name,
                     Email = request.Email,
+
                     Password = PasswordHasher.HashPassword(request.Password),
                     Role = request.Role,
                     Phone = request.Phone,
@@ -152,11 +157,12 @@ namespace Crave.API.Services.Implementation
                     user.ZipCode = request.ZipCode;
 
                 if (!string.IsNullOrWhiteSpace(request.Password))
+
                     user.Password = PasswordHasher.HashPassword(request.Password);
+
 
                 if (!string.IsNullOrWhiteSpace(request.Role))
                     user.Role = request.Role;
-
 
 
                 await _context.SaveChangesAsync();
@@ -202,12 +208,14 @@ namespace Crave.API.Services.Implementation
                     return null;
                 }
 
+
                 if (!PasswordHasher.VerifyPassword(request.Password, user.Password))
+
                 {
                     _logger.LogWarning("Authentication failed: Invalid password for {Email}", request.Email);
                     return null;
                 }
-                
+
 
                 // Generate JWT token
                 var token = _jwtService.GenerateToken(user);
@@ -225,7 +233,6 @@ namespace Crave.API.Services.Implementation
                 throw new InvalidOperationException("Authentication failed. Please try again later.");
             }
         }
-
 
 
         private static UserResponse MapUserToResponse(User user)
