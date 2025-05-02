@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Crave.API.Data.Entities
@@ -17,8 +17,11 @@ namespace Crave.API.Data.Entities
         public string ZipCode { get; set; } = string.Empty;
 
         public int? CardId { get; set; }
+
         [ForeignKey("CardId")]
         public Card? Card { get; set; }
+
+        public ICollection<Restaurant> Restaurants { get; set; } = new List<Restaurant>();
 
         public ICollection<Order>? Orders { get; set; }
         public ICollection<Review>? Reviews { get; set; }

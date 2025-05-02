@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Crave.API.Data.Entities
 {
@@ -15,6 +15,11 @@ namespace Crave.API.Data.Entities
         public string ContactInfo { get; set; } = string.Empty;
         public string OperatingHours { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
+
+        public int UserId { get; set; }
+
+        // required لتفادي التحذير
+        public required User User { get; set; }
 
         public ICollection<FoodItem>? FoodItems { get; set; }
         public ICollection<Order>? Orders { get; set; }

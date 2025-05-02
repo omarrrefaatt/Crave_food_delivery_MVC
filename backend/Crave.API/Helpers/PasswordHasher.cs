@@ -1,14 +1,17 @@
-public interface IPasswordHasher
+namespace Crave.API.Data.Helpers
 {
-    string HashPassword(string password);
-    bool VerifyPassword(string password, string hash);
-}
+    public interface IPasswordHasher
+    {
+        string HashPassword(string password);
+        bool VerifyPassword(string password, string hash);
+    }
 
-public class BcryptPasswordHasher : IPasswordHasher
-{
-    public string HashPassword(string password) =>
-        BCrypt.Net.BCrypt.HashPassword(password);
+    public class BcryptPasswordHasher : IPasswordHasher
+    {
+        public string HashPassword(string password) =>
+            BCrypt.Net.BCrypt.HashPassword(password);
 
-    public bool VerifyPassword(string password, string hash) =>
-        BCrypt.Net.BCrypt.Verify(password, hash);
+        public bool VerifyPassword(string password, string hash) =>
+            BCrypt.Net.BCrypt.Verify(password, hash);
+    }
 }
