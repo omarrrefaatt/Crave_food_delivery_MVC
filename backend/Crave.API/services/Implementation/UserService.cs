@@ -1,16 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using Crave.API.Data;
 using Crave.API.Data.Entities;
 using Crave.API.DTOS.User;
 using Microsoft.EntityFrameworkCore;
 using Crave.API.Services.Interfaces;
-using Microsoft.Extensions.Logging;
-using Crave.API.Services.Implementation;
+using Crave.API.Helpers;
+
 
 namespace Crave.API.Services.Implementation
 {
@@ -31,6 +26,35 @@ namespace Crave.API.Services.Implementation
         {
             var users = await _context.Users.ToListAsync();
             return users.Select(MapUserToResponse);
+        }
+        public async Task<bool> ChangePasswordAsync(int userId, ChangePasswordRequest request)
+        {
+            try
+            {
+                var user = await _context.Users.FindAsync(userId);
+                if (user == null) return false;
+
+                // Verify old password
+                if (!PasswordHasher.VerifyPassword(request.OldPassword, user.Password))
+                {
+                    throw new InvalidOperationException("Old password is incorrect");
+                }
+
+                // Validate new password
+                if (!PasswordValidator.IsPasswordValid(request.NewPassword, out string error))
+                {
+                    throw new InvalidOperationException("Invalid new password: " + error);
+                }
+
+                user.Password = PasswordHasher.HashPassword(request.NewPassword);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error changing password for user {UserId}: {Message}", userId, ex.Message);
+                throw new InvalidOperationException("Could not change password. Please try again later.");
+            }
         }
 
         public async Task<UserResponse?> GetUserByIdAsync(int userId)
@@ -55,12 +79,28 @@ namespace Crave.API.Services.Implementation
                 {
                     throw new InvalidOperationException("Email is already registered");
                 }
+                if (await _context.Users.AnyAsync(u => u.Phone.ToLower() == request.Phone.ToLower()))
+                {
+                    throw new InvalidOperationException("Phone number is already registered");
+                }
+                if (request.Password != request.confirmPassword)
+                {
+                    throw new InvalidOperationException("Passwords do not match");
+                }
+                if (string.IsNullOrWhiteSpace(request.Role))
+                {
+                    request.Role = "Customer"; // Default role
+                }
+                if (!PasswordValidator.IsPasswordValid(request.Password, out string error))
+                {
+                    throw new InvalidOperationException("Invalid password: " + error);
+                }
 
                 var user = new User
                 {
                     Name = request.Name,
                     Email = request.Email,
-                    Password = HashPasswordSecure(request.Password),
+                    Password = PasswordHasher.HashPassword(request.Password),
                     Role = request.Role,
                     Phone = request.Phone,
                     Address = request.Address,
@@ -112,13 +152,12 @@ namespace Crave.API.Services.Implementation
                     user.ZipCode = request.ZipCode;
 
                 if (!string.IsNullOrWhiteSpace(request.Password))
-                    user.Password = HashPasswordSecure(request.Password);
+                    user.Password = PasswordHasher.HashPassword(request.Password);
 
                 if (!string.IsNullOrWhiteSpace(request.Role))
                     user.Role = request.Role;
 
-                // if (request.CardId.HasValue)
-                //     user.CardId = request.CardId;
+
 
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("User updated successfully: {UserId}", userId);
@@ -163,11 +202,12 @@ namespace Crave.API.Services.Implementation
                     return null;
                 }
 
-                if (!VerifyPassword(request.Password, user.Password))
+                if (!PasswordHasher.VerifyPassword(request.Password, user.Password))
                 {
                     _logger.LogWarning("Authentication failed: Invalid password for {Email}", request.Email);
                     return null;
                 }
+                
 
                 // Generate JWT token
                 var token = _jwtService.GenerateToken(user);
@@ -204,47 +244,6 @@ namespace Crave.API.Services.Implementation
             };
         }
 
-        private static string HashPasswordSecure(string password)
-        {
-            // Generate a random salt
-            byte[] salt = new byte[16];
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                rng.GetBytes(salt);
-            }
 
-            // Hash the password with the salt
-            using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 10000, HashAlgorithmName.SHA256);
-            byte[] hash = pbkdf2.GetBytes(32);
-
-            // Combine the salt and hash
-            byte[] hashBytes = new byte[48];
-            Array.Copy(salt, 0, hashBytes, 0, 16);
-            Array.Copy(hash, 0, hashBytes, 16, 32);
-
-            return Convert.ToBase64String(hashBytes);
-        }
-
-        private static bool VerifyPassword(string password, string storedHash)
-        {
-            // Convert the stored hash from base64 string to byte array
-            byte[] hashBytes = Convert.FromBase64String(storedHash);
-
-            // Extract the salt (first 16 bytes)
-            byte[] salt = new byte[16];
-            Array.Copy(hashBytes, 0, salt, 0, 16);
-
-            // Compute the hash on the password the user entered
-            using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, 10000, HashAlgorithmName.SHA256);
-            byte[] hash = pbkdf2.GetBytes(32);
-
-            // Compare the computed hash with the stored hash
-            for (int i = 0; i < 32; i++)
-            {
-                if (hashBytes[i + 16] != hash[i])
-                    return false;
-            }
-            return true;
-        }
     }
 }
