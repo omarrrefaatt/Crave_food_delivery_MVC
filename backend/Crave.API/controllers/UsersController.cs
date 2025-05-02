@@ -1,6 +1,10 @@
 using Crave.API.DTOS.User;
 using Crave.API.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
+using Crave.API.Data.Entities;
 
 namespace Crave.API.Controllers
 {
@@ -162,6 +166,35 @@ namespace Crave.API.Controllers
                 _logger.LogError(ex, "Error during login");
                 return StatusCode(500, "An error occurred during login");
             }
+        }
+        
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
+        [HttpGet("profile")]
+        public async Task<IActionResult> GetProfile()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId == null)
+            {
+                return BadRequest("User ID not found in claims");
+            }
+
+            var user = await _userService.GetUserByIdAsync(int.Parse(userId));
+
+            if (user == null)
+            {
+                return NotFound("User not found");
+            }
+
+            return Ok(new
+            {
+                user
+            });
         }
 
         /// <summary>
