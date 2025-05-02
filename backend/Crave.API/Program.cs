@@ -27,7 +27,9 @@ builder.Services.AddDbContext<CraveDbContext>(options =>
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICardService, CardService>();
+
 builder.Services.AddScoped<IFoodItemService, FoodItemService>();
+
 
 // Add JWT Authentication
 var jwtKey = builder.Configuration["JwtSettings:SecretKey"];
