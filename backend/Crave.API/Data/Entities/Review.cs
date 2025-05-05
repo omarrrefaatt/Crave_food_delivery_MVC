@@ -16,7 +16,8 @@ namespace Crave.API.Data.Entities
         [ForeignKey("RestaurantId")]
         public Restaurant? Restaurant { get; set; }
 
-        public double Rating { get; set; }
+        public int Rating { get; set; }
         public string Comments { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

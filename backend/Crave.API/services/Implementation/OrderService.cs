@@ -16,6 +16,9 @@ namespace Crave.API.services
 
         public async Task<OrderResponse> CreateOrderAsync(CreateOrderRequest request)
         {
+            if (request.OrderItem == null || !request.OrderItem.Any())
+    throw new ArgumentException("Order must contain at least one item.");
+
             var order = new Order
             {
                 UserId = request.UserId,
