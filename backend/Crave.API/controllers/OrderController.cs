@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Crave.API.DTOS;
 using Crave.API.services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Crave.API.controllers
 {
@@ -22,10 +24,24 @@ namespace Crave.API.controllers
         [HttpPost]
         [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [Authorize]
         public async Task<ActionResult<OrderResponse>> CreateOrder(CreateOrderRequest request)
         {
             try
             {
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (userId == null)
+                    return BadRequest("User ID not found in claims.");
+                var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+                if (userRole == null)
+                    return BadRequest("User is not authorized to create an order.");
+                if (userRole.ToString() != "Customer")
+                    return BadRequest("User is not authorized to create an order, only customers can create orders.");
+                if (request.OrderItem == null || !request.OrderItem.Any())
+                    return BadRequest("Order must contain at least one item.");
+                request.UserId = int.Parse(userId);
                 var order = await _orderService.CreateOrderAsync(request);
                 return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
             }
@@ -128,11 +144,15 @@ namespace Crave.API.controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize]
         public async Task<ActionResult> DeleteOrder(int id)
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return BadRequest("User ID not found in claims.");
             try
             {
-                var result = await _orderService.DeleteOrderAsync(id);
+                var result = await _orderService.DeleteOrderAsync(id,int.Parse(userId));
                 if (!result)
                     return NotFound();
 

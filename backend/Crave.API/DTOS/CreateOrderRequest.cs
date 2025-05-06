@@ -4,9 +4,9 @@
     {
         public int UserId { get; set; }
         public int RestaurantId { get; set; }
-        public List<CreateOrderItemRequest> OrderItem { get; set; }
-        public string Notes { get; set; }
-        public string PaymentMethod { get; set; }
+        public List<CreateOrderItemRequest> OrderItem { get; set; } =[];
+        public string Notes { get; set; }= string.Empty;
+        public string PaymentMethod { get; set; }= string.Empty;
     }
     public class CreateOrderItemRequest
     {

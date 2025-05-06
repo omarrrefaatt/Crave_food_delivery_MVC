@@ -16,8 +16,20 @@ namespace Crave.API.services
 
         public async Task<OrderResponse> CreateOrderAsync(CreateOrderRequest request)
         {
-            if (request.OrderItem == null || !request.OrderItem.Any())
-    throw new ArgumentException("Order must contain at least one item.");
+            foreach (var item in request.OrderItem)
+            {
+                var foodItem = await _context.FoodItems.FindAsync(item.FoodItemId);
+                if (foodItem == null)
+                    throw new KeyNotFoundException($"Food item with ID {item.FoodItemId} not found");
+                if (foodItem.RestaurantId != request.RestaurantId)
+                    throw new InvalidOperationException($"Food item with ID {item.FoodItemId} does not belong to restaurant with ID {request.RestaurantId}");
+                if (item.Quantity <= 0)
+                    throw new ArgumentException($"Quantity for food item with ID {item.FoodItemId} must be greater than zero");
+            }
+
+            var restaurant = await _context.Restaurants.FindAsync(request.RestaurantId);
+            if (restaurant == null)
+                throw new KeyNotFoundException($"Restaurant with ID {request.RestaurantId} not found");
 
             var order = new Order
             {
@@ -26,8 +38,7 @@ namespace Crave.API.services
                 Notes = request.Notes,
                 PaymentMethod = request.PaymentMethod,
                 OrderItems = request.OrderItem.Select(item => new OrderItem
-                {
-                    FoodItemId = item.FoodItemId,
+                {  FoodItemId = item.FoodItemId,
                     Quantity = item.Quantity
                 }).ToList()
             };
@@ -93,16 +104,32 @@ namespace Crave.API.services
             return MapToOrderResponse(order);
         }
 
-        public async Task<bool> DeleteOrderAsync(int id)
+        public async Task<bool> DeleteOrderAsync(int id,int userId)
         {
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.FoodItem)
+                .FirstOrDefaultAsync(o => o.Id == id && o.UserId == userId);
+
             if (order == null)
                 return false;
+            if (order.OrderItems == null)
+                return false;
+            if (order.OrderItems.Count == 0)
+                return false;
+            if(order.UserId != userId)
+                return false;
+
+            foreach (var item in order.OrderItems)
+            {
+                _context.OrderItems.Remove(item);
+            }
 
             _context.Orders.Remove(order);
             await _context.SaveChangesAsync();
             return true;
         }
+        
 
         private OrderResponse MapToOrderResponse(Order order)
         {

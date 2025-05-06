@@ -163,7 +163,9 @@ namespace Crave.API.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
+                if(request.Role == null){
+                    request.Role = "Customer";
+                }
                 var user = await _userService.CreateUserAsync(request);
                 return CreatedAtAction(nameof(GetUserById), new { id = user.UserId }, user);
             }

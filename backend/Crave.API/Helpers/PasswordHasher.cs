@@ -11,9 +11,8 @@ public class PasswordHasher
 
     public static string HashPassword(string password)
     {
-        using var rng = new RNGCryptoServiceProvider();
         byte[] salt = new byte[SaltSize];
-        rng.GetBytes(salt);
+        RandomNumberGenerator.Fill(salt);
 
         // Generate the hash
         using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, Iterations, HashAlgorithmName.SHA256);

@@ -48,10 +48,11 @@ namespace Crave.API.Controllers
             if (userId == null)
                 return BadRequest("User ID not found in claims.");
             var userRole =  User.FindFirst(ClaimTypes.Role)?.Value;
-            Console.WriteLine("User Role: " + userRole);
             var userExists = await _restaurantService.GetRestaurantByUserIdAsync(int.Parse(userId));
             if (userExists != null)
                 return BadRequest("User already has a restaurant.");
+            if (userRole == null)
+                return BadRequest("User is not authorized to create a restaurant.");
             if(userRole.ToString() != "Restaurant Manager")
                 return BadRequest("User is not authorized to create a restaurant.");
 
@@ -71,7 +72,7 @@ namespace Crave.API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
                 return BadRequest("User ID not found in claims.");
-            if (User.FindFirst(ClaimTypes.Role)?.Value == "Restaurant Manager")
+            if (User.FindFirst(ClaimTypes.Role)?.Value != "Restaurant Manager")
                 return BadRequest("User is not authorized to update a restaurant.");
             var restaurant = await _restaurantService.GetByIdAsync(id);
             if (restaurant == null)

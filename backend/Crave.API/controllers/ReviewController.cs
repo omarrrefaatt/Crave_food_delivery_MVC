@@ -36,18 +36,11 @@ namespace Crave.API.Controllers
             if (!userExists)
                 return BadRequest("user not found in the database.");
 
-            var review = new Review
-            {
-                Rating = dto.Rating,
-                Comments = dto.Comment,
-                RestaurantId = dto.RestaurantId,
-                UserId = int.Parse(userId),
-            };
 
-            _context.Reviews.Add(review);
-            await _context.SaveChangesAsync();
+           var review = await _reviewService.CreateAsync(dto, int.Parse(userId));
+            
 
-            return Ok("Review added successfully.");
+            return CreatedAtAction(nameof(GetReviewsForRestaurant), new { restaurantId = review.RestaurantId }, review);
         }
 
         [HttpGet("restaurant/{restaurantId}")]
@@ -61,8 +54,8 @@ namespace Crave.API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
                 return BadRequest("User ID not found in claims.");
-            if (User.FindFirst(ClaimTypes.Role)?.Value == "Restaurant Manager")
-                return BadRequest("User is not authorized to delete a restaurant.");
+            if (User.FindFirst(ClaimTypes.Role)?.Value != "Restaurant Manager")
+                return BadRequest("User is not the owner of the restaurant.");
     
             var reviews = await _reviewService.GetByRestaurantIdAsync(restaurantId,int.Parse(userId));
             return Ok(reviews);

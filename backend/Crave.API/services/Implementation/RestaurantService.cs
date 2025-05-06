@@ -3,6 +3,7 @@ using Crave.API.Data.Entities;
 using Crave.API.DTOS.Restaurant;
 using Microsoft.EntityFrameworkCore;
 using Crave.API.services.Interfaces;
+using Crave.API.DTOS.Reviews;
 
 namespace Crave.API.Services.Implementation
 {
@@ -19,14 +20,15 @@ namespace Crave.API.Services.Implementation
 
         public async Task<IEnumerable<RestaurantReadDto>> GetAllAsync()
         {
-            var restaurants = await _context.Restaurants.ToListAsync();
+            var restaurants = await _context.Restaurants.Include(r => r.Reviews).ToListAsync();
             return restaurants.Select(fromRestuarantToResponse);
         }
 
         public async Task<RestaurantReadDto?> GetByIdAsync(int id)
         {
             var restaurant = await _context.Restaurants.FindAsync(id);
-            Console.WriteLine(restaurant);
+    
+            Console.WriteLine("restaurant.Reviews: " + restaurant.Reviews);
             return restaurant != null ? fromRestuarantToResponse(restaurant) : null;
         }
 
@@ -65,7 +67,10 @@ namespace Crave.API.Services.Implementation
         {
             try
             {
-                var restaurant = await _context.Restaurants.FindAsync(id);
+                var restaurant = await _context.Restaurants
+                    .Include(r => r.Reviews)
+                    .FirstOrDefaultAsync(r => r.Id == id);
+
                 
                 if (restaurant == null) return false;
                 if (restaurant.managerId != userId) return false;
@@ -132,7 +137,18 @@ namespace Crave.API.Services.Implementation
                 ContactInfo = restaurant.ContactInfo,
                 OperatingHours = restaurant.OperatingHours,
                 Location = restaurant.Location,
-                ImageUrl = restaurant.ImageUrl
+                ImageUrl = restaurant.ImageUrl,
+                Reviews  = restaurant.Reviews?.Select(r => new ReviewReadDto
+                {
+                    Id = r.Id,
+                    RestaurantId = r.RestaurantId,
+                    UserId = r.UserId,
+                    Rating = r.Rating,
+                    Comment = r.Comments,
+                    CreatedAt = r.CreatedAt
+                }).ToList()
+                ,
+                            
             };
         }
  

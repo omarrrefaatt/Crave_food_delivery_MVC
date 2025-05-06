@@ -29,20 +29,39 @@ namespace Crave.API.Services.Implementation
             }
 
             // Check if the restaurant exists
-            var restaurant = await _context.Restaurants.FindAsync(dto.RestaurantId);
+            var restaurant = await _context.Restaurants
+                    .Include(r => r.Reviews)
+                    .FirstOrDefaultAsync(r => r.Id == dto.RestaurantId);
+
             if (restaurant == null)
             {
                 throw new ArgumentException("Restaurant not found.");
             }
+            if (restaurant.managerId == userId)
+            {
+                throw new ArgumentException("You cannot review your own restaurant.");
+            }
+            if (restaurant.Reviews == null)
+            {
+                restaurant.Reviews = new List<Review>();
+                restaurant.Rating = dto.Rating;
 
-            // Create the review
-        {
+            }
+            else
+            {
+                restaurant.Rating = (restaurant.Rating * restaurant.Reviews.Count + dto.Rating) / (restaurant.Reviews.Count + 1);
+            }
             var review = new Review
             {
                 RestaurantId = dto.RestaurantId,
                 UserId = userId,
                 Rating = dto.Rating,
+                Comments = dto.Comment,
+                CreatedAt = DateTime.UtcNow
             };
+            restaurant.Reviews.Append(review);
+            Console.WriteLine("restaurant.Reviews: " + restaurant.Reviews.Count);
+
 
             await _context.Reviews.AddAsync(review);
             await _context.SaveChangesAsync();
@@ -54,9 +73,9 @@ namespace Crave.API.Services.Implementation
                 UserId = review.UserId,
                 Rating = review.Rating,
                 Comment = review.Comments,
-                CreatedAt = review.CreatedAt
+                CreatedAt = review.CreatedAt,
             };
-        }
+        
         }
         public async Task<IEnumerable<ReviewReadDto>> GetByRestaurantIdAsync(int restaurantId,int managerId)
         {

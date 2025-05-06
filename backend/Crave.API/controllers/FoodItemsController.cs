@@ -1,6 +1,9 @@
+using System.Security.Claims;
 using Crave.API.DTOS.FoodItem;
 using Crave.API.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration.UserSecrets;
 
 namespace Crave.API.Controllers
 {
@@ -24,11 +27,21 @@ namespace Crave.API.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize]
         public async Task<ActionResult<IEnumerable<FoodItemResponse>>> GetAllFoodItems()
+
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return BadRequest("User ID not found in claims.");
+            var userRole =  User.FindFirst(ClaimTypes.Role)?.Value;
+            if(userRole != "Restaurant Manager")
+                return BadRequest("User is not authorized to view all food items.");
             try
             {
-                var foodItems = await _foodItemService.GetAllFoodItemsAsync();
+                var foodItems = await _foodItemService.GetAllFoodItemsAsync(int.Parse(userId));
                 return Ok(foodItems);
             }
             catch (Exception ex)
@@ -99,8 +112,15 @@ namespace Crave.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
         public async Task<ActionResult<FoodItemResponse>> CreateFoodItem([FromBody] CreateFoodItemRequest request)
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return BadRequest("User ID not found in claims.");
+            var userRole =  User.FindFirst(ClaimTypes.Role)?.Value;
+            if(userRole != "Restaurant Manager")
+                return BadRequest("User is not authorized to create a food item.");
             try
             {
                 if (!ModelState.IsValid)
@@ -108,7 +128,7 @@ namespace Crave.API.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var foodItem = await _foodItemService.CreateFoodItemAsync(request);
+                var foodItem = await _foodItemService.CreateFoodItemAsync(request,int.Parse(userId));
                 return CreatedAtAction(nameof(GetFoodItemById), new { id = foodItem.Id }, foodItem);
             }
             catch (InvalidOperationException ex)

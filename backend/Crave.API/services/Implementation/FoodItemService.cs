@@ -17,14 +17,25 @@ namespace Crave.API.Services.Implementation
             _logger = logger;
         }
 
-        public async Task<IEnumerable<FoodItemResponse>> GetAllFoodItemsAsync()
+        public async Task<IEnumerable<FoodItemResponse>> GetAllFoodItemsAsync(int userId)
         {
+            // Check if the user is a restaurant manager
+            var restaurant = await _context.Restaurants
+                .FirstOrDefaultAsync(r => r.managerId == userId);
+
+            if (restaurant == null)
+            {
+                throw new InvalidOperationException("User is don't have a restaurant");
+            }
+
+            // Get all food items for the restaurant
             var foodItems = await _context.FoodItems
-                .Include(f => f.Restaurant)
+                .Where(f => f.RestaurantId == restaurant.Id)
                 .ToListAsync();
 
             return foodItems.Select(MapToFoodItemResponse);
         }
+
 
         public async Task<IEnumerable<FoodItemResponse>> GetFoodItemsByRestaurantAsync(int restaurantId)
         {
@@ -45,21 +56,24 @@ namespace Crave.API.Services.Implementation
             return foodItem != null ? MapToFoodItemResponse(foodItem) : null;
         }
 
-        public async Task<FoodItemResponse> CreateFoodItemAsync(CreateFoodItemRequest request)
+        public async Task<FoodItemResponse> CreateFoodItemAsync(CreateFoodItemRequest request,int userId)
         {
-            // Verify that the restaurant exists
-            var restaurant = await _context.Restaurants.FindAsync(request.RestaurantId);
+            // Check if the user is a restaurant manager
+            var restaurant = await _context.Restaurants
+                .FirstOrDefaultAsync(r => r.managerId == userId);
+
             if (restaurant == null)
             {
-                throw new InvalidOperationException($"Restaurant with ID {request.RestaurantId} does not exist");
+                throw new InvalidOperationException("User is don't have a restaurant");
             }
+
 
             var foodItem = new FoodItem
             {
                 Name = request.Name,
                 Description = request.Description,
                 Rating = request.Rating,
-                RestaurantId = request.RestaurantId
+                RestaurantId = restaurant.Id,
             };
 
             _context.FoodItems.Add(foodItem);
@@ -67,7 +81,6 @@ namespace Crave.API.Services.Implementation
 
             // Reload the food item with restaurant data
             await _context.Entry(foodItem).Reference(f => f.Restaurant).LoadAsync();
-
             return MapToFoodItemResponse(foodItem);
         }
 
