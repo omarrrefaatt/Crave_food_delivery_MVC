@@ -155,7 +155,7 @@ namespace Crave.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<UserResponse>> Register([FromBody] CreateUserRequest request)
+        public async Task<ActionResult<AuthenticationResponse>> Register([FromBody] CreateUserRequest request)
         {
             try
             {
@@ -167,7 +167,11 @@ namespace Crave.API.Controllers
                     request.Role = "Customer";
                 }
                 var user = await _userService.CreateUserAsync(request);
-                return CreatedAtAction(nameof(GetUserById), new { id = user.UserId }, user);
+                return new AuthenticationResponse
+                {
+                    Role = user.Role,
+                    Token = user.Token
+                };
             }
             catch (InvalidOperationException ex)
             {
@@ -191,7 +195,7 @@ namespace Crave.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult<UserResponse>> Login([FromBody] LoginRequest request)
+        public async Task<ActionResult<AuthenticationResponse>> Login([FromBody] LoginRequest request)
         {
             try
             {
@@ -206,7 +210,11 @@ namespace Crave.API.Controllers
                     return Unauthorized("Invalid email or password");
                 }
 
-                return Ok(user);
+                return new AuthenticationResponse
+                {
+                    Role = user.Role,
+                    Token = user.Token
+                };
             }
             catch (Exception ex)
             {
@@ -221,8 +229,9 @@ namespace Crave.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        [Authorize]
         [HttpGet("profile")]
+        [Authorize]
+
         public async Task<IActionResult> GetProfile()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -231,8 +240,10 @@ namespace Crave.API.Controllers
             {
                 return BadRequest("User ID not found in claims");
             }
+            Console.WriteLine("User ID: " + userId);
 
             var user = await _userService.GetUserByIdAsync(int.Parse(userId));
+
 
             if (user == null)
             {

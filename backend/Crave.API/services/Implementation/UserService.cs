@@ -104,20 +104,23 @@ namespace Crave.API.Services.Implementation
                 {
                     Name = request.Name,
                     Email = request.Email,
-
                     Password = PasswordHasher.HashPassword(request.Password),
                     Role = request.Role,
                     Phone = request.Phone,
                     Address = request.Address,
                     ZipCode = request.ZipCode,
-                    // CardId = request.CardId
                 };
+                
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation("User created successfully: {Email}", user.Email);
-                return MapUserToResponse(user);
+                var token = _jwtService.GenerateToken(user);
+                _logger.LogInformation("User created successfully: {Email}", user.UserId);
+                
+                var response = MapUserToResponse(user);
+                response.Token = token;
+                return response;
             }
             catch (Exception ex)
             {
