@@ -48,9 +48,6 @@ namespace Crave.API.Controllers
             if (userId == null)
                 return BadRequest("User ID not found in claims.");
             var userRole =  User.FindFirst(ClaimTypes.Role)?.Value;
-            var userExists = await _restaurantService.GetRestaurantByUserIdAsync(int.Parse(userId));
-            if (userExists != null)
-                return BadRequest("User already has a restaurant.");
             if (userRole == null)
                 return BadRequest("User is not authorized to create a restaurant.");
             if(userRole.ToString() != "Restaurant Manager")

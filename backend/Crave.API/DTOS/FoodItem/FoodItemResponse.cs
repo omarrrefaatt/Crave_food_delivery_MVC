@@ -10,5 +10,7 @@ namespace Crave.API.DTOS.FoodItem
         public double Rating { get; set; }
         public int RestaurantId { get; set; }
         public string RestaurantName { get; set; } = string.Empty;
+        public string ImageUrl { get; set; } = string.Empty;
+        public double Price { get; set; }
     }
 } 

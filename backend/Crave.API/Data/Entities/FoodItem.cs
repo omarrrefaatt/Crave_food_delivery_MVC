@@ -12,6 +12,9 @@ namespace Crave.API.Data.Entities
         public string Description { get; set; } = string.Empty;
         public double Rating { get; set; }
 
+        public double Price { get; set; }
+        public string ImageUrl { get; set; } = string.Empty;
+
         public int RestaurantId { get; set; }
         [ForeignKey("RestaurantId")]
         public Restaurant? Restaurant { get; set; }
@@ -19,3 +22,5 @@ namespace Crave.API.Data.Entities
         public ICollection<OrderItem>? OrderItems { get; set; }
     }
 }
+
+

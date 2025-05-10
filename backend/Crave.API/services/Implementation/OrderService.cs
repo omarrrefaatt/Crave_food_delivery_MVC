@@ -37,6 +37,9 @@ namespace Crave.API.services
                 RestaurantId = request.RestaurantId,
                 Notes = request.Notes,
                 PaymentMethod = request.PaymentMethod,
+                OrderStatus = "Pending",
+                TotalPrice = request.OrderItem.Sum(item => item.Quantity * (decimal)_context.FoodItems.Find(item.FoodItemId).Price),
+                CreatedAt = DateTime.UtcNow,
                 OrderItems = request.OrderItem.Select(item => new OrderItem
                 {  FoodItemId = item.FoodItemId,
                     Quantity = item.Quantity
@@ -71,6 +74,16 @@ namespace Crave.API.services
                 .ToListAsync();
 
             return orders.Select(MapToOrderResponse).ToList();
+        }
+        public async Task<List<OrderDetailsResponse>> GetOrdersDetailsByUserIdAsync(int userId)
+        {
+            var orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.FoodItem)
+                .Include(o => o.Restaurant)
+                .Where(o => o.UserId == userId)
+                .ToListAsync();
+            return orders.Select(MapToOrderDetailsResponse).ToList();
         }
 
         public async Task<List<OrderResponse>> GetOrdersByRestaurantIdAsync(int restaurantId)
@@ -141,6 +154,29 @@ namespace Crave.API.services
                 Notes = order.Notes,
                 PaymentMethod = order.PaymentMethod,
                 OrderItem = order.OrderItems?.Select(item => new OrderItemResponse
+                {
+                    Id = item.Id,
+                    FoodItemId = item.FoodItemId,
+                    FoodItemName = item.FoodItem?.Name ?? "Unknown Item",
+                    Quantity = item.Quantity
+                }).ToList() ?? new List<OrderItemResponse>()
+            };
+        }
+        private OrderDetailsResponse MapToOrderDetailsResponse(Order order)
+        {
+            return new OrderDetailsResponse
+            {
+                Id = order.Id,
+                UserId = order.UserId,
+                RestaurantId = order.RestaurantId,
+                RestaurantImage = order.Restaurant?.ImageUrl ?? "Unknown Image",
+                RestaurantName = order.Restaurant?.Name ?? "Unknown Restaurant",
+                Notes = order.Notes,
+                PaymentMethod = order.PaymentMethod,
+                OrderStatus = order.OrderStatus,
+                OrderDate = order.CreatedAt,
+                TotalPrice = order.TotalPrice,
+                OrderItem = order.OrderItems?.Select(item => new OrderItemResponse     
                 {
                     Id = item.Id,
                     FoodItemId = item.FoodItemId,

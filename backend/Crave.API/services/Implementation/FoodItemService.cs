@@ -44,6 +44,7 @@ namespace Crave.API.Services.Implementation
                 .Where(f => f.RestaurantId == restaurantId)
                 .ToListAsync();
 
+            Console.WriteLine($"Food items for restaurant {restaurantId}: {foodItems.Count}");
             return foodItems.Select(MapToFoodItemResponse);
         }
 
@@ -66,6 +67,7 @@ namespace Crave.API.Services.Implementation
             {
                 throw new InvalidOperationException("User is don't have a restaurant");
             }
+            Console.WriteLine($"image url: {request.ImageUrl} ,price: {request.Price}");
 
 
             var foodItem = new FoodItem
@@ -74,6 +76,8 @@ namespace Crave.API.Services.Implementation
                 Description = request.Description,
                 Rating = request.Rating,
                 RestaurantId = restaurant.Id,
+                ImageUrl = request.ImageUrl,
+                Price = request.Price
             };
 
             _context.FoodItems.Add(foodItem);
@@ -112,6 +116,10 @@ namespace Crave.API.Services.Implementation
             
             if (request.Rating.HasValue)
                 foodItem.Rating = request.Rating.Value;
+            if (request.ImageUrl != null)
+                foodItem.ImageUrl = request.ImageUrl;
+            if (request.Price.HasValue)
+                foodItem.Price = request.Price.Value;
 
             await _context.SaveChangesAsync();
 
@@ -150,7 +158,9 @@ namespace Crave.API.Services.Implementation
                 Description = foodItem.Description,
                 Rating = foodItem.Rating,
                 RestaurantId = foodItem.RestaurantId,
-                RestaurantName = foodItem.Restaurant?.Name ?? string.Empty
+                RestaurantName = foodItem.Restaurant?.Name ?? string.Empty,
+                ImageUrl = foodItem.ImageUrl,
+                Price = foodItem.Price
             };
         }
     }

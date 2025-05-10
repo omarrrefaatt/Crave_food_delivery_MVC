@@ -35,6 +35,11 @@ namespace Crave.API.Services.Implementation
 
         public async Task<RestaurantReadDto> CreateAsync(RestaurantCreateDto request, int userId)
         {
+            var restaurantExists = await _context.Restaurants
+                .FirstOrDefaultAsync(r => r.managerId == userId);
+
+            if (restaurantExists != null)
+                throw new KeyNotFoundException($"Restaurant with User ID {userId} already exists");
             try
             {
                 // Create the new card

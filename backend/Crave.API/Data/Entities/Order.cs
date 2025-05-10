@@ -19,7 +19,9 @@ namespace Crave.API.Data.Entities
         public int RestaurantId { get; set; }
         [ForeignKey("RestaurantId")]
         public Restaurant? Restaurant { get; set; }
-
+        public string OrderStatus { get; set; } = "Pending";
+        public decimal TotalPrice { get; set; }
+        
         public ICollection<OrderItem>? OrderItems { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

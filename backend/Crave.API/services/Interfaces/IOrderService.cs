@@ -10,6 +10,7 @@ namespace Crave.API.services
         Task<List<OrderResponse>> GetOrdersByUserIdAsync(int userId);
         Task<List<OrderResponse>> GetOrdersByRestaurantIdAsync(int restaurantId);
         Task<OrderResponse> UpdateOrderAsync(int id, UpdateOrderRequest request);
+        Task<List<OrderDetailsResponse>> GetOrdersDetailsByUserIdAsync(int userId);
         Task<bool> DeleteOrderAsync(int id,int userId);
     }
 }

@@ -16,5 +16,12 @@ namespace Crave.API.DTOS.FoodItem
 
         [Required(ErrorMessage = "Restaurant ID is required")]
         public int RestaurantId { get; set; }
+
+        [Required(ErrorMessage = "image is required")]
+        public string ImageUrl { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Price is required")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
+        public double Price { get; set; } = 0;
     }
 } 

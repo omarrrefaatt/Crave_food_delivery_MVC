@@ -42,6 +42,7 @@ namespace Crave.API.controllers
                 if (request.OrderItem == null || !request.OrderItem.Any())
                     return BadRequest("Order must contain at least one item.");
                 request.UserId = int.Parse(userId);
+                Console.WriteLine("waslttttttfegcfweuf");
                 var order = await _orderService.CreateOrderAsync(request);
                 return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
             }
@@ -86,6 +87,28 @@ namespace Crave.API.controllers
             try
             {
                 var orders = await _orderService.GetOrdersByUserIdAsync(userId);
+                return Ok(orders);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        /// <summary>
+        /// Gets all orders for a specific user
+        /// </summary>
+        [HttpGet("user")]
+        [ProducesResponseType(typeof(List<OrderResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize]
+        public async Task<ActionResult<List<OrderDetailsResponse>>> GetMyOrders()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return BadRequest("User ID not found in claims.");
+            try
+            {
+                var orders = await _orderService.GetOrdersDetailsByUserIdAsync(int.Parse(userId));
                 return Ok(orders);
             }
             catch (Exception ex)

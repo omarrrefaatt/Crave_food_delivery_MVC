@@ -14,5 +14,9 @@ namespace Crave.API.DTOS.FoodItem
         public double? Rating { get; set; }
 
         public int? RestaurantId { get; set; }
+        public string ImageUrl { get; set; }
+
+        [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
+        public double? Price { get; set; }
     }
 } 
