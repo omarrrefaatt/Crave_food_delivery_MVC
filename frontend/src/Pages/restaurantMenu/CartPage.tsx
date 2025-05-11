@@ -86,6 +86,7 @@ const CartPage = () => {
         console.error("No token found in localStorage");
         return;
       }
+      console.log(token);
 
       await placeOrder(orderData, token);
 

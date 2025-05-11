@@ -17,7 +17,6 @@ export const get_current_customer = async (token: string) => {
     }
 
     const data = await response.json();
-    console.log(data);
     return data;
   } catch (e) {
     throw e;

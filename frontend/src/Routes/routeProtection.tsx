@@ -12,10 +12,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredRole,
 }) => {
   const { user } = useAuthContext();
-
-  if (!user || !user.role || (requiredRole && user.role !== requiredRole)) {
-    return <Navigate to="/login" replace />;
-  }
+  console.log("ProtectedRoute user:", user);
+  console.log("ProtectedRoute requiredRole:", requiredRole);
+  // if (!user || !user.role || (requiredRole && user.role !== requiredRole)) {
+  //   return <Navigate to="/login" replace />;
+  // }
 
   return children;
 };

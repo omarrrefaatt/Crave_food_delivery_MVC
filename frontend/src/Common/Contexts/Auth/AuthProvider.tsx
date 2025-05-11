@@ -27,11 +27,20 @@ export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => {
+    console.log("AuthContextProvider mounted");
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      const user = JSON.parse(storedUser) as { role: string; token: string };
-      if (user && user.role && user.token) {
-        dispatch({ type: "LOGIN", payload: user });
+    console.log("Stored user:", storedUser);
+    const storedToken = localStorage.getItem("token");
+    console.log("Stored token:", storedToken);
+    if (storedUser && storedToken) {
+      if (storedToken && storedUser) {
+        dispatch({
+          type: "LOGIN",
+          payload: {
+            role: JSON.parse(storedUser),
+            token: JSON.parse(storedToken),
+          },
+        });
       }
     }
   }, []);
