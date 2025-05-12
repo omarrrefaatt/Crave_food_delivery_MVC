@@ -54,7 +54,7 @@ namespace Crave.API.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
                 return BadRequest("User ID not found in claims.");
-            if (User.FindFirst(ClaimTypes.Role)?.Value != "Restaurant Manager")
+            if (User.FindFirst(ClaimTypes.Role)?.Value != "RestaurantOwner")
                 return BadRequest("User is not the owner of the restaurant.");
     
             var reviews = await _reviewService.GetByRestaurantIdAsync(restaurantId,int.Parse(userId));

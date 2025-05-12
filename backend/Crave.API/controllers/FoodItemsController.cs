@@ -37,7 +37,7 @@ namespace Crave.API.Controllers
             if (userId == null)
                 return BadRequest("User ID not found in claims.");
             var userRole =  User.FindFirst(ClaimTypes.Role)?.Value;
-            if(userRole != "Restaurant Manager")
+            if(userRole != "RestaurantOwner")
                 return BadRequest("User is not authorized to view all food items.");
             try
             {
@@ -119,7 +119,7 @@ namespace Crave.API.Controllers
             if (userId == null)
                 return BadRequest("User ID not found in claims.");
             var userRole =  User.FindFirst(ClaimTypes.Role)?.Value;
-            if(userRole != "Restaurant Manager")
+            if(userRole != "RestaurantOwner")
                 return BadRequest("User is not authorized to create a food item.");
             try
             {

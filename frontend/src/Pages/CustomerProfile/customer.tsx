@@ -302,7 +302,13 @@ const Customer: React.FC = () => {
                         <div className={styles.orderInfoItem}>
                           <p className={styles.orderInfoLabel}>Date</p>
                           <p className={styles.orderInfoValue}>
-                            {order.orderDate}
+                            {new Date(order.orderDate).toLocaleString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
                           </p>
                         </div>
                         <div className={styles.orderInfoItem}>

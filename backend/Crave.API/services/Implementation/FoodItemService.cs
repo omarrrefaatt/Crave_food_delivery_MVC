@@ -19,7 +19,7 @@ namespace Crave.API.Services.Implementation
 
         public async Task<IEnumerable<FoodItemResponse>> GetAllFoodItemsAsync(int userId)
         {
-            // Check if the user is a restaurant manager
+            // Check if the user is a RestaurantOwner
             var restaurant = await _context.Restaurants
                 .FirstOrDefaultAsync(r => r.managerId == userId);
 
@@ -59,7 +59,7 @@ namespace Crave.API.Services.Implementation
 
         public async Task<FoodItemResponse> CreateFoodItemAsync(CreateFoodItemRequest request,int userId)
         {
-            // Check if the user is a restaurant manager
+            // Check if the user is a RestaurantOwner
             var restaurant = await _context.Restaurants
                 .FirstOrDefaultAsync(r => r.managerId == userId);
 

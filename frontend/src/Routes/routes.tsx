@@ -9,6 +9,7 @@ import Admin from "../Pages/Admin/Admin";
 import RestaurantMenu from "../Pages/restaurantMenu/RestaurantMenu";
 import CartPage from "../Pages/restaurantMenu/CartPage";
 import OrderSuccessPage from "../Pages/restaurantMenu/OrderSuccessPage";
+import RestaurantOwnerPage from "../Pages/OwnerProfile/owner";
 
 export const routes = [
   {
@@ -43,7 +44,7 @@ export const routes = [
         <Customer />
       </ProtectedRoute>
     ),
-    name: "Patient Profile",
+    name: "Customer Profile",
   },
   {
     path: "/admin-profile",
@@ -62,6 +63,15 @@ export const routes = [
       </ProtectedRoute>
     ),
     name: "checkout",
+  },
+  {
+    path: "/RestaurantOwner-profile",
+    element: (
+      <ProtectedRoute requiredRole="RestaurantOwner">
+        <RestaurantOwnerPage />
+      </ProtectedRoute>
+    ),
+    name: "Restaurant Owner",
   },
   {
     path: "/order-success",
