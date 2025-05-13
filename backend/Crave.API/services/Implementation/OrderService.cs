@@ -116,6 +116,24 @@ namespace Crave.API.services
             await _context.SaveChangesAsync();
             return MapToOrderResponse(order);
         }
+        public async Task<OrderResponse> UpdateOrderStatusAsync(int id, UpdateOrderStatusRequest request)
+        {
+            var order = await _context.Orders.Include(o=>o.Restaurant).FirstOrDefaultAsync(o => o.Id == id);
+
+
+            if (order == null)
+                throw new KeyNotFoundException($"Order with ID {id} not found");
+            if (order.UserId != request.userId && order.Restaurant?.managerId != request.userId)
+                throw new InvalidOperationException($"Order with ID {id} does not belong to user with ID {request.userId}");
+
+            if(request.OrderStatus != null)
+                order.OrderStatus = request.OrderStatus;
+            else
+                throw new ArgumentException("Order status cannot be null");
+
+            await _context.SaveChangesAsync();
+            return MapToOrderResponse(order);
+        }
 
         public async Task<bool> DeleteOrderAsync(int id,int userId)
         {

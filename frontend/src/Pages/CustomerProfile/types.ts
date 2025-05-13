@@ -5,6 +5,11 @@ export interface OrderItem {
   foodItemId: number;
   quantity: number;
 }
+export interface ReviewData {
+  rating: number;
+  comment: string;
+  restaurantId: number;
+}
 
 export interface Order {
   id: number;

@@ -6,13 +6,10 @@ import StatisticCard from "../../Common/Components/Statistics-Card/statisticsCar
 import SectionHeader from "./Components/Section-Header/sectionHeader";
 import SectionBackground from "./Components/Section-Background/sectionBackground";
 import SectionContent from "./Components/Section-Content/sectionContent";
-import { useNavigate } from "react-router-dom";
 import { infoCardsData, statisticsData, sectionContentData } from "./constants";
 import Footer from "../../Common/Components/Footer/footer";
 
 const HomePage: React.FC = () => {
-  const navigate = useNavigate();
-
   return (
     // HomePage Container
     <div>
@@ -67,8 +64,8 @@ const HomePage: React.FC = () => {
             />
           ))}
         </SectionBackground>
-        {/* Patients' Feedback Section */}
-        <div id="patientsFeedback" className=" ">
+        {/* customer rviews  Section */}
+        <div id="custome-reviews" className=" ">
           {" "}
           <SectionHeader
             headerText="Delivering Delicious Meals Right to Your Doorstep"

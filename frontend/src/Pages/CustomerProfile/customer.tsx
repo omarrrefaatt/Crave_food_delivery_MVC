@@ -9,17 +9,42 @@ import {
   FaCreditCard,
   FaMapMarkerAlt as FaZipCode,
   FaReceipt,
+  FaStar,
+  FaRegStar,
+  FaTimes,
 } from "react-icons/fa";
 import defaultProfilePhoto from "../../assets/default_profile_photo.png";
-import { get_current_customer, get_customer_orders } from "./services";
-import { CustomerData, Order } from "./types";
-
-// Enhanced with additional props for the Order interface
+import {
+  get_current_customer,
+  get_customer_orders,
+  submit_restaurant_review,
+  cancel_order,
+} from "./services";
+import { CustomerData, Order, ReviewData } from "./types";
 
 const Customer: React.FC = () => {
   const [customerData, setCustomerData] = useState<CustomerData | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [activeFilter, setActiveFilter] = useState<string>("all");
+
+  // Review modal states
+  const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
+  const [selectedRestaurant, setSelectedRestaurant] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
+  const [reviewData, setReviewData] = useState<ReviewData>({
+    rating: 0,
+    comment: "",
+    restaurantId: 0,
+  });
+  const [reviewSubmitting, setReviewSubmitting] = useState<boolean>(false);
+  const [reviewSuccess, setReviewSuccess] = useState<boolean>(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [cancelError, setCancelError] = useState("");
+  const [cancelSuccess, setCancelSuccess] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,6 +119,103 @@ const Customer: React.FC = () => {
       default:
         return styles.statusPending;
     }
+  };
+
+  // Open review modal for a specific restaurant
+  const openReviewModal = (restaurantId: number, restaurantName: string) => {
+    setSelectedRestaurant({ id: restaurantId, name: restaurantName });
+    setReviewData({
+      rating: 0,
+      comment: "",
+      restaurantId: restaurantId,
+    });
+    setReviewSuccess(false);
+    setReviewError(null);
+    setShowReviewModal(true);
+  };
+
+  // Close review modal
+  const closeReviewModal = () => {
+    setShowReviewModal(false);
+    setSelectedRestaurant(null);
+  };
+
+  // Handle star rating selection
+  const handleRatingChange = (rating: number) => {
+    setReviewData((prev) => ({ ...prev, rating }));
+  };
+
+  // Handle comment change
+  const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setReviewData((prev) => ({ ...prev, comment: e.target.value }));
+  };
+
+  // Submit review to API
+  const submitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (reviewData.rating === 0) {
+      setReviewError("Please select a rating");
+      return;
+    }
+
+    setReviewSubmitting(true);
+    setReviewError(null);
+
+    const tokenString = localStorage.getItem("token");
+
+    if (!tokenString) {
+      setReviewError("Authentication error. Please log in again.");
+      setReviewSubmitting(false);
+      return;
+    }
+
+    const token = JSON.parse(tokenString);
+
+    try {
+      await submit_restaurant_review(token, reviewData);
+      setReviewSuccess(true);
+      setTimeout(() => {
+        closeReviewModal();
+      }, 2000);
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      setReviewError("Failed to submit review. Please try again.");
+    } finally {
+      setReviewSubmitting(false);
+    }
+  };
+  const handleCancelClick = (orderId: number) => {
+    setSelectedOrderId(orderId);
+    setShowCancelModal(true);
+  };
+
+  const confirmCancelOrder = async () => {
+    if (selectedOrderId === null) return;
+
+    try {
+      setCancelError("");
+      setCancelSuccess("");
+      const tokenString = localStorage.getItem("token");
+      if (!tokenString) {
+        setCancelError("Authentication error. Please log in again.");
+        return;
+      }
+      const token = JSON.parse(tokenString);
+
+      await cancel_order(token, Number(selectedOrderId));
+      setCancelSuccess("Order cancelled successfully.");
+      setShowCancelModal(false);
+      // Optional: refresh orders or UI here
+    } catch (error: any) {
+      setCancelError("Failed to cancel order. Please try again.");
+    }
+  };
+
+  const closeCancelModal = () => {
+    setShowCancelModal(false);
+    setSelectedOrderId(null);
+    setCancelError("");
   };
 
   return (
@@ -265,7 +387,9 @@ const Customer: React.FC = () => {
             {filteredOrders.length === 0 ? (
               <div className={styles.emptyOrders}>
                 <FaReceipt size={40} color="#d1d5db" />
-                <p className={styles.emptyOrdersText}>No orders found.</p>
+                <p className={styles.emptyOrdersText}>
+                  No {activeFilter} orders found.
+                </p>
               </div>
             ) : (
               filteredOrders.map((order) => (
@@ -357,8 +481,24 @@ const Customer: React.FC = () => {
                         View Details
                       </button>
                       {order.orderStatus.toLowerCase() === "pending" && (
-                        <button className={styles.actionButton}>
+                        <button
+                          className={styles.actionButton}
+                          onClick={() => handleCancelClick(order.id)}
+                        >
                           Cancel Order
+                        </button>
+                      )}
+                      {order.orderStatus.toLowerCase() === "delivered" && (
+                        <button
+                          className={`${styles.actionButton} ${styles.reviewButton}`}
+                          onClick={() =>
+                            openReviewModal(
+                              Number(order.restaurantId),
+                              order.restaurantName
+                            )
+                          }
+                        >
+                          Leave Review
                         </button>
                       )}
                     </div>
@@ -369,6 +509,90 @@ const Customer: React.FC = () => {
           </div>
         </div>
       </div>
+      {showCancelModal && (
+        <div className={styles.reviewModalOverlay}>
+          <div className={styles.cancelModal}>
+            <button
+              className={styles.modalCloseButton}
+              onClick={closeCancelModal}
+            >
+              <FaTimes />
+            </button>
+            <h2 className={styles.modalTitle}>Cancel Order</h2>
+            <p className={styles.modalBodyText}>
+              Are you sure you want to cancel this order?
+            </p>
+            {cancelError && <p className={styles.reviewError}>{cancelError}</p>}
+            {cancelSuccess && (
+              <p className={styles.reviewSuccess}>{cancelSuccess}</p>
+            )}
+            <div className={styles.modalButtons}>
+              <button
+                className={styles.confirmButton}
+                onClick={confirmCancelOrder}
+              >
+                Yes, Cancel
+              </button>
+              <button
+                className={styles.cancelButton}
+                onClick={closeCancelModal}
+              >
+                No, Keep
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showReviewModal && (
+        <div className={styles.reviewModalOverlay}>
+          <div className={styles.reviewModal}>
+            <button
+              className={styles.modalCloseButton}
+              onClick={closeReviewModal}
+            >
+              <FaTimes />
+            </button>
+            <h2 className={styles.modalTitle}>
+              Review {selectedRestaurant?.name}
+            </h2>
+            <form onSubmit={submitReview}>
+              <div className={styles.starRating}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <span
+                    key={star}
+                    className={styles.starIcon}
+                    onClick={() => handleRatingChange(star)}
+                  >
+                    {reviewData.rating >= star ? <FaStar /> : <FaRegStar />}
+                  </span>
+                ))}
+              </div>
+              <textarea
+                className={styles.reviewTextarea}
+                placeholder="Leave your comment here..."
+                value={reviewData.comment}
+                onChange={handleCommentChange}
+              />
+              {reviewError && (
+                <p className={styles.reviewError}>{reviewError}</p>
+              )}
+              {reviewSuccess && (
+                <p className={styles.reviewSuccess}>
+                  Review submitted successfully!
+                </p>
+              )}
+              <button
+                type="submit"
+                className={styles.submitReviewButton}
+                disabled={reviewSubmitting}
+              >
+                {reviewSubmitting ? "Submitting..." : "Submit Review"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

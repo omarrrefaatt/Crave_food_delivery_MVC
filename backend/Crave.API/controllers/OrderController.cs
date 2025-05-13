@@ -136,6 +136,7 @@ namespace Crave.API.controllers
             }
         }
 
+
         /// <summary>
         /// Updates an existing order
         /// </summary>
@@ -148,6 +149,40 @@ namespace Crave.API.controllers
             try
             {
                 var order = await _orderService.UpdateOrderAsync(id, request);
+                return Ok(order);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        /// <summary>
+        /// Updates an existing order status
+        /// </summary>
+        [HttpPut("status/{id}")]
+        [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize]
+        public async Task<ActionResult<OrderResponse>> UpdateOrderStatus(int id, UpdateOrderStatusRequest request)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return BadRequest("User ID not found in claims.");
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (request.OrderStatus == null)
+                return BadRequest("Order status cannot be null");
+            if (request.OrderStatus != "Pending" && request.OrderStatus != "processing" && request.OrderStatus != "cancelled" && request.OrderStatus != "delivered")
+                return BadRequest("Order status must be either 'Pending', 'processing', 'cancelled' or 'delivered'");
+
+            request.userId = int.Parse(userId);
+            try
+            {
+                var order = await _orderService.UpdateOrderStatusAsync(id, request);
                 return Ok(order);
             }
             catch (KeyNotFoundException)
