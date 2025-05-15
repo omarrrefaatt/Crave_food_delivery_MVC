@@ -56,6 +56,24 @@ export const routes = [
     name: "Admin",
   },
   {
+    path: "/admin-profile/restaurants",
+    element: (
+      <ProtectedRoute requiredRole="admin">
+        <Admin />
+      </ProtectedRoute>
+    ),
+    name: "Admin Restaurants",
+  },
+  {
+    path: "/admin-profile/managers",
+    element: (
+      <ProtectedRoute requiredRole="admin">
+        <Admin />
+      </ProtectedRoute>
+    ),
+    name: "Admin Managers",
+  },
+  {
     path: "/checkout",
     element: (
       <ProtectedRoute requiredRole="Customer">

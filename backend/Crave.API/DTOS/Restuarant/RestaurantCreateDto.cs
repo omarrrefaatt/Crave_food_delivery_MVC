@@ -2,6 +2,7 @@ namespace Crave.API.DTOS.Restaurant
 {
     public class RestaurantCreateDto
     {
+        public int userId { get; set; }
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Category { get; set; } = string.Empty;

@@ -33,13 +33,13 @@ namespace Crave.API.Services.Implementation
         }
 
 
-        public async Task<RestaurantReadDto> CreateAsync(RestaurantCreateDto request, int userId)
+        public async Task<RestaurantReadDto> CreateAsync(RestaurantCreateDto request)
         {
             var restaurantExists = await _context.Restaurants
-                .FirstOrDefaultAsync(r => r.managerId == userId);
+                .FirstOrDefaultAsync(r => r.managerId == request.userId);
 
             if (restaurantExists != null)
-                throw new KeyNotFoundException($"Restaurant with User ID {userId} already exists");
+                throw new KeyNotFoundException($"Restaurant with User ID {request.userId} already exists");
             try
             {
                 // Create the new card
@@ -53,9 +53,8 @@ namespace Crave.API.Services.Implementation
                     OperatingHours = request.OperatingHours,
                     Location = request.Location,
                     ImageUrl = request.ImageUrl,
-                    managerId = userId
+                    managerId = request.userId,
                 };
-
 
                 _context.Restaurants.Add(restaurant);
                 await _context.SaveChangesAsync();
@@ -105,7 +104,7 @@ namespace Crave.API.Services.Implementation
             {
                 var restaurant = await _context.Restaurants.FindAsync(id);
                 if (restaurant == null) return false;
-                if (restaurant.managerId != userId) return false;
+                // if (restaurant.managerId != userId) return false;
                 _context.Restaurants.Remove(restaurant);
                 await _context.SaveChangesAsync();
                 return true;

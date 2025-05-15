@@ -51,6 +51,34 @@ namespace Crave.API.controllers
                 return BadRequest(ex.Message);
             }
         }
+        /// <summary>
+        /// Gets all orders 
+        /// </summary>
+        [HttpGet]
+        [ProducesResponseType(typeof(List<OrderResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize]
+        public async Task<ActionResult<List<OrderResponse>>> GetOrders()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (userId == null)
+                return BadRequest("User ID not found in claims.");
+            if (userRole == null)
+                return BadRequest("User is not authorized to get orders.");
+            if (userRole.ToString() != "admin")
+                return BadRequest("User is not authorized to get orders, only admins can get all orders.");
+            try
+                {
+
+                    var orders = await _orderService.GetOrdersByUserIdAsync(0);
+                    return Ok(orders);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest(ex.Message);
+                }
+        }
 
         /// <summary>
         /// Gets an order by ID
