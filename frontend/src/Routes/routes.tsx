@@ -10,6 +10,7 @@ import RestaurantMenu from "../Pages/restaurantMenu/RestaurantMenu";
 import CartPage from "../Pages/restaurantMenu/CartPage";
 import OrderSuccessPage from "../Pages/restaurantMenu/OrderSuccessPage";
 import RestaurantOwnerPage from "../Pages/OwnerProfile/owner";
+import FoodManagementPage from "../Pages/OwnerProfile/FoodManagementPage";
 
 export const routes = [
   {
@@ -90,6 +91,15 @@ export const routes = [
       </ProtectedRoute>
     ),
     name: "Restaurant Owner",
+  },
+  {
+    path: "/RestaurantOwner-profile/food-management",
+    element: (
+      <ProtectedRoute requiredRole="RestaurantOwner">
+        <FoodManagementPage />
+      </ProtectedRoute>
+    ),
+    name: "Food Management",
   },
   {
     path: "/order-success",
