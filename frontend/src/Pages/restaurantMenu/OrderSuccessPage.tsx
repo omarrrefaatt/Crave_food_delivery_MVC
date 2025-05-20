@@ -6,6 +6,7 @@ const OrderSuccessPage = () => {
   const navigate = useNavigate();
   const [orderTotal, setOrderTotal] = useState<string>("0.00");
   const [restaurantName, setRestaurantName] = useState<string>("Restaurant");
+  const [paymentId, setPaymentId] = useState<string | null>(null);
   const [orderId, setOrderId] = useState<string>(
     `ORD-${Math.floor(100000 + Math.random() * 900000)}`
   );
@@ -17,6 +18,9 @@ const OrderSuccessPage = () => {
       }
       if (location.state.restaurantName) {
         setRestaurantName(location.state.restaurantName);
+      }
+      if (location.state.paymentId) {
+        setPaymentId(location.state.paymentId);
       }
     }
 
@@ -66,11 +70,34 @@ const OrderSuccessPage = () => {
             <span className="text-gray-600">Restaurant:</span>
             <span className="font-medium">{restaurantName}</span>
           </div>
+          {paymentId && (
+            <div className="flex justify-between mb-2">
+              <span className="text-gray-600">Payment ID:</span>
+              <span className="font-medium">{paymentId}</span>
+            </div>
+          )}
           <div className="flex justify-between font-bold">
             <span>Total:</span>
             <span>${orderTotal}</span>
           </div>
         </div>
+
+        {paymentId && (
+          <div className="bg-green-50 border border-green-200 rounded p-4 mb-6">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-green-700">
+                  Payment processed successfully via Stripe.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="text-center">
           <p className="text-gray-600 mb-6">
@@ -85,7 +112,7 @@ const OrderSuccessPage = () => {
               Order Again
             </button>
             <button
-              onClick={() => navigate("/Customer-profile")} // You could implement this in the future
+              onClick={() => navigate("/Customer-profile")}
               className="bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-6 rounded-md font-medium transition-colors"
               type="button"
             >

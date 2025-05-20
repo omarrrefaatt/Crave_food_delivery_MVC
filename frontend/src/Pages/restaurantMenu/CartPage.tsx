@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FoodItem } from "./types";
 import { placeOrder } from "./service";
+import { StripeProvider, StripePaymentForm } from "../../components/StripePayment";
 
 interface CartItem extends FoodItem {
   quantity: number;
@@ -17,6 +18,8 @@ const CartPage = () => {
   const [paymentMethod, setPaymentMethod] = useState<string>("Credit Card");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [showStripeForm, setShowStripeForm] = useState<boolean>(true);
+  const [paymentId, setPaymentId] = useState<string | null>(null);
 
   // Get cart items from location state
   useEffect(() => {
@@ -54,6 +57,25 @@ const CartPage = () => {
     setCart(cart.filter((item) => item.id !== id));
   };
 
+  const handlePaymentMethodChange = (method: string) => {
+    setPaymentMethod(method);
+    setShowStripeForm(method === "Credit Card");
+    // Reset payment ID if changing payment method
+    if (method !== "Credit Card") {
+      setPaymentId(null);
+    }
+  };
+
+  const handlePaymentSuccess = (id: string) => {
+    setPaymentId(id);
+    setError(null);
+  };
+
+  const handlePaymentError = (errorMessage: string) => {
+    setError(`Payment error: ${errorMessage}`);
+    setPaymentId(null);
+  };
+
   const handleSubmitOrder = async () => {
     try {
       if (!restaurantId) {
@@ -68,6 +90,12 @@ const CartPage = () => {
         return;
       }
 
+      // If credit card payment is selected but no payment has been processed
+      if (paymentMethod === "Credit Card" && !paymentId) {
+        setError("Please complete the payment information before placing your order.");
+        return;
+      }
+
       setIsSubmitting(true);
       setError(null);
 
@@ -79,7 +107,7 @@ const CartPage = () => {
           quantity: item.quantity,
         })),
         notes: notes,
-        paymentMethod: paymentMethod,
+        paymentMethod: paymentMethod + (paymentId ? ` (ID: ${paymentId})` : ""),
       };
       let token = localStorage.getItem("token");
       if (!token) {
@@ -96,6 +124,7 @@ const CartPage = () => {
           orderTotal: getTotalPrice(),
           restaurantName:
             cart.length > 0 ? cart[0].restaurantName : "Restaurant",
+          paymentId: paymentId
         },
       });
     } catch (err) {
@@ -248,21 +277,59 @@ const CartPage = () => {
           ></textarea>
         </div>
 
-        <div>
+        <div className="mb-6">
           <label htmlFor="payment" className="block text-gray-700 mb-2">
             Payment Method
           </label>
-          <select
-            id="payment"
-            value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
-            <option value="Credit Card">Credit Card</option>
-            <option value="Cash">Cash on Delivery</option>
-            <option value="PayPal">PayPal</option>
-          </select>
+          <div className="flex flex-col space-y-2">
+            <div className="flex items-center">
+              <input
+                type="radio"
+                id="creditCard"
+                name="paymentMethod"
+                value="Credit Card"
+                checked={paymentMethod === "Credit Card"}
+                onChange={() => handlePaymentMethodChange("Credit Card")}
+                className="mr-2"
+              />
+              <label htmlFor="creditCard" className="cursor-pointer">
+                Credit Card
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="radio"
+                id="cash"
+                name="paymentMethod"
+                value="Cash"
+                checked={paymentMethod === "Cash"}
+                onChange={() => handlePaymentMethodChange("Cash")}
+                className="mr-2"
+              />
+              <label htmlFor="cash" className="cursor-pointer">
+                Cash on Delivery
+              </label>
+            </div>
+          </div>
         </div>
+
+        {showStripeForm && (
+          <div className="mb-6">
+            <h3 className="text-lg font-medium mb-3">Payment Information</h3>
+            <StripeProvider>
+              <StripePaymentForm 
+                amount={parseFloat(getTotalPrice())}
+                onPaymentSuccess={handlePaymentSuccess}
+                onPaymentError={handlePaymentError}
+              />
+            </StripeProvider>
+            {paymentId && (
+              <div className="mt-4 p-3 bg-green-50 text-green-700 border border-green-200 rounded">
+                Payment processed successfully! Payment ID: {paymentId}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex gap-4 justify-end">
