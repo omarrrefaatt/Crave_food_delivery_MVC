@@ -10,6 +10,7 @@ import RestaurantMenu from "../Pages/restaurantMenu/RestaurantMenu";
 import CartPage from "../Pages/restaurantMenu/CartPage";
 import OrderSuccessPage from "../Pages/restaurantMenu/OrderSuccessPage";
 import RestaurantOwnerPage from "../Pages/OwnerProfile/owner";
+import FoodManagementPage from "../Pages/OwnerProfile/FoodManagementPage";
 
 export const routes = [
   {
@@ -56,6 +57,24 @@ export const routes = [
     name: "Admin",
   },
   {
+    path: "/admin-profile/restaurants",
+    element: (
+      <ProtectedRoute requiredRole="admin">
+        <Admin />
+      </ProtectedRoute>
+    ),
+    name: "Admin Restaurants",
+  },
+  {
+    path: "/admin-profile/managers",
+    element: (
+      <ProtectedRoute requiredRole="admin">
+        <Admin />
+      </ProtectedRoute>
+    ),
+    name: "Admin Managers",
+  },
+  {
     path: "/checkout",
     element: (
       <ProtectedRoute requiredRole="Customer">
@@ -72,6 +91,15 @@ export const routes = [
       </ProtectedRoute>
     ),
     name: "Restaurant Owner",
+  },
+  {
+    path: "/RestaurantOwner-profile/food-management",
+    element: (
+      <ProtectedRoute requiredRole="RestaurantOwner">
+        <FoodManagementPage />
+      </ProtectedRoute>
+    ),
+    name: "Food Management",
   },
   {
     path: "/order-success",

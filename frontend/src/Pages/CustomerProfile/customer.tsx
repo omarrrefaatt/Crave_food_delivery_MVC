@@ -87,6 +87,12 @@ const Customer: React.FC = () => {
                 })),
               };
             });
+            unwrappedOrders.sort((a, b) => {
+              return (
+                new Date(b.orderDate).getTime() -
+                new Date(a.orderDate).getTime()
+              );
+            });
             setOrders(unwrappedOrders);
           }
         } catch (error) {

@@ -54,6 +54,7 @@ namespace Crave.API.services
 
         public async Task<OrderResponse> GetOrderByIdAsync(int id)
         {
+            
             var order = await _context.Orders
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.FoodItem)
@@ -67,12 +68,20 @@ namespace Crave.API.services
 
         public async Task<List<OrderResponse>> GetOrdersByUserIdAsync(int userId)
         {
-            var orders = await _context.Orders
+            var orders = new List<Order>();
+            if (userId <= 0) {
+                orders = await _context.Orders.Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.FoodItem)
+                .ToListAsync();
+            } 
+            else
+            {
+                orders = await _context.Orders
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.FoodItem)
                 .Where(o => o.UserId == userId)
                 .ToListAsync();
-
+            }
             return orders.Select(MapToOrderResponse).ToList();
         }
         public async Task<List<OrderDetailsResponse>> GetOrdersDetailsByUserIdAsync(int userId)

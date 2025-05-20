@@ -48,12 +48,17 @@ namespace Crave.API.Controllers
             if (userId == null)
                 return BadRequest("User ID not found in claims.");
             var userRole =  User.FindFirst(ClaimTypes.Role)?.Value;
-            if (userRole == null)
-                return BadRequest("User is not authorized to create a restaurant.");
-            if(userRole.ToString() != "RestaurantOwner")
-                return BadRequest("User is not authorized to create a restaurant.");
 
-            var created = await _restaurantService.CreateAsync(dto, int.Parse(userId));
+            if (userRole == null)
+                return BadRequest("User is not de2deded to create a restaurant.");
+            if(userRole.ToString() != "RestaurantOwner" && userRole.ToString() != "admin" )
+                return BadRequest("User is not authorededdedeized to create a restaurant.");
+            if (userRole.ToString() == "RestaurantOwner")
+            {
+                dto.userId = int.Parse(userId);
+            }
+
+            var created = await _restaurantService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
@@ -67,10 +72,13 @@ namespace Crave.API.Controllers
         public async Task<IActionResult> Update(int id, RestaurantCreateDto dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (userRole == null)
+                return BadRequest("User is not authorized to update a restaurant.");
             if (userId == null)
                 return BadRequest("User ID not found in claims.");
-            if (User.FindFirst(ClaimTypes.Role)?.Value != "RestaurantOwner")
-                return BadRequest("User is not authorized to update a restaurant.");
+            if (userRole.ToString() != "RestaurantOwner" && userRole.ToString() != "admin")
+                return BadRequest("User is not authorized to delete ahhhhh restaurant.");
             var restaurant = await _restaurantService.GetByIdAsync(id);
             if (restaurant == null)
                 return NotFound();
@@ -91,10 +99,15 @@ namespace Crave.API.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            if (userRole == null)
+                return BadRequest("User is not authorized to delete a restaurant.");
+            Console.WriteLine("userRole: " + userRole);
             if (userId == null)
                 return BadRequest("User ID not found in claims.");
-            if (User.FindFirst(ClaimTypes.Role)?.Value == "RestaurantOwner")
-                return BadRequest("User is not authorized to delete a restaurant.");
+            if (userRole.ToString() != "RestaurantOwner" && userRole.ToString() != "admin")
+                return BadRequest("User is not authorized to delete ahhhhh restaurant.");
+            
             var restaurant = await _restaurantService.GetByIdAsync(id);
             if (restaurant == null)
                 return NotFound();
