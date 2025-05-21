@@ -61,6 +61,27 @@ namespace Crave.API.Controllers
             var created = await _restaurantService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
+                // POST: api/restaurant
+        [HttpGet("getMyRestaurant")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
+        public async Task<ActionResult<RestaurantDetailsDto>> getMyRestaurant()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return BadRequest("User ID not found in claims.");
+            var userRole =  User.FindFirst(ClaimTypes.Role)?.Value;
+
+            if (userRole == null)
+                return BadRequest("User is not de2deded to create a restaurant.");
+            if(userRole.ToString() != "RestaurantOwner"  )
+                return BadRequest("User does not have a restaurant.");
+
+            var response = await _restaurantService.GetRestaurantByUserIdAsync(int.Parse(userId));
+            return response;
+        }
 
         // PUT: api/restaurant/{id}
         [HttpPut("{id}")]

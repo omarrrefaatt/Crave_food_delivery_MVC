@@ -116,14 +116,44 @@ namespace Crave.API.Services.Implementation
             }
         }
 
-        public async Task<RestaurantReadDto> GetRestaurantByUserIdAsync(int userId)
+        public async Task<RestaurantDetailsDto> GetRestaurantByUserIdAsync(int userId)
         {
-            var restaurant = await _context.Restaurants.FirstOrDefaultAsync(r => r.managerId == userId);
+            var restaurant = await _context.Restaurants
+                .Include(r => r.Orders)
+                .FirstOrDefaultAsync(r => r.managerId == userId);
+
             if (restaurant == null)
                 throw new KeyNotFoundException($"Restaurant with User ID {userId} not found");
 
-            return fromRestuarantToResponse(restaurant);
+            var totalOrders = restaurant.Orders?.Count() ?? 0;
+            var totalSuccessOrders = restaurant.Orders?.Count(o => o.OrderStatus == "delivered") ?? 0;
+            var totalCancelledOrders = restaurant.Orders?.Count(o => o.OrderStatus == "cancelled") ?? 0;
+        var totalRevenue = restaurant.Orders?
+            .Where(o => o.OrderStatus == "delivered")
+            .Sum(o => (double)o.TotalPrice) ?? 0;
+
+
+            return new RestaurantDetailsDto
+            {
+                Id = restaurant.Id,
+                Name = restaurant.Name,
+                Description = restaurant.Description,
+                Category = restaurant.Category,
+                Rating = restaurant.Rating,
+                AvgDeliveryTime = restaurant.AvgDeliveryTime,
+                ContactInfo = restaurant.ContactInfo,
+                OperatingHours = restaurant.OperatingHours,
+                Location = restaurant.Location,
+                ImageUrl = restaurant.ImageUrl,
+                totalRevnue = totalRevenue,
+                totalSucsessOrders = totalSuccessOrders,
+                totalOrders = totalOrders,
+                totalCancelledOrders = totalCancelledOrders,
+            };
         }
+
+        
+
 
 
 
@@ -142,7 +172,7 @@ namespace Crave.API.Services.Implementation
                 OperatingHours = restaurant.OperatingHours,
                 Location = restaurant.Location,
                 ImageUrl = restaurant.ImageUrl,
-                Reviews  = restaurant.Reviews?.Select(r => new ReviewReadDto
+                Reviews = restaurant.Reviews?.Select(r => new ReviewReadDto
                 {
                     Id = r.Id,
                     RestaurantId = r.RestaurantId,
@@ -152,7 +182,7 @@ namespace Crave.API.Services.Implementation
                     CreatedAt = r.CreatedAt
                 }).ToList()
                 ,
-                            
+
             };
         }
  

@@ -84,6 +84,7 @@ const Customer: React.FC = () => {
                   foodItemId: Number(item.foodItemId),
                   foodItemName: item.foodItemName,
                   quantity: item.quantity,
+                  price: Number(item.price),
                 })),
               };
             });
@@ -469,7 +470,7 @@ const Customer: React.FC = () => {
                           <span>{item.foodItemName}</span>
                         </div>
                         <span className={styles.itemPrice}>
-                          ${item.quantity.toFixed(2)}
+                          {item.quantity} x ${item.price}
                         </span>
                       </li>
                     ))}

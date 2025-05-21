@@ -84,14 +84,35 @@ namespace Crave.API.services
             }
             return orders.Select(MapToOrderResponse).ToList();
         }
-        public async Task<List<OrderDetailsResponse>> GetOrdersDetailsByUserIdAsync(int userId)
+        public async Task<List<OrderDetailsResponse>> GetOrdersDetailsByUserIdAsync(int userId,string userRole)
         {
-            var orders = await _context.Orders
+            if (userRole != "customer" && userRole != "restaurant")
+                throw new InvalidOperationException($"User with ID {userId} does not have permission to view orders");
+
+            if (userId <= 0)
+                throw new ArgumentException("User ID must be greater than zero");
+            var orders = new List<Order>();
+            if (userRole == "restaurant")
+            {
+                orders = await _context.Orders
+                .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.FoodItem)
+                .Include(o => o.Restaurant)
+                .Where(o => o.Restaurant.managerId == userId)
+                .ToListAsync();
+
+            }
+            else
+            {
+                orders = await _context.Orders
                 .Include(o => o.OrderItems)
                 .ThenInclude(oi => oi.FoodItem)
                 .Include(o => o.Restaurant)
                 .Where(o => o.UserId == userId)
                 .ToListAsync();
+                
+            }
+             
             return orders.Select(MapToOrderDetailsResponse).ToList();
         }
 
@@ -132,8 +153,8 @@ namespace Crave.API.services
 
             if (order == null)
                 throw new KeyNotFoundException($"Order with ID {id} not found");
-            if (order.UserId != request.userId && order.Restaurant?.managerId != request.userId)
-                throw new InvalidOperationException($"Order with ID {id} does not belong to user with ID {request.userId}");
+            // if (order.UserId != request.userId && order.Restaurant?.managerId != request.userId)
+            //     throw new InvalidOperationException($"Order with ID {id} does not belong to user with ID {request.userId}");
 
             if(request.OrderStatus != null)
                 order.OrderStatus = request.OrderStatus;
@@ -185,7 +206,8 @@ namespace Crave.API.services
                     Id = item.Id,
                     FoodItemId = item.FoodItemId,
                     FoodItemName = item.FoodItem?.Name ?? "Unknown Item",
-                    Quantity = item.Quantity
+                    Quantity = item.Quantity,
+                    price = item.FoodItem?.Price ?? 0
                 }).ToList() ?? new List<OrderItemResponse>()
             };
         }
@@ -203,12 +225,13 @@ namespace Crave.API.services
                 OrderStatus = order.OrderStatus,
                 OrderDate = order.CreatedAt,
                 TotalPrice = order.TotalPrice,
-                OrderItem = order.OrderItems?.Select(item => new OrderItemResponse     
+                OrderItem = order.OrderItems?.Select(item => new OrderItemResponse
                 {
                     Id = item.Id,
                     FoodItemId = item.FoodItemId,
                     FoodItemName = item.FoodItem?.Name ?? "Unknown Item",
-                    Quantity = item.Quantity
+                    Quantity = item.Quantity,
+                    price = item.FoodItem?.Price ?? 0
                 }).ToList() ?? new List<OrderItemResponse>()
             };
         }

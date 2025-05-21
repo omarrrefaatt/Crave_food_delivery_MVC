@@ -11,6 +11,7 @@ import CartPage from "../Pages/restaurantMenu/CartPage";
 import OrderSuccessPage from "../Pages/restaurantMenu/OrderSuccessPage";
 import RestaurantOwnerPage from "../Pages/OwnerProfile/owner";
 import FoodManagementPage from "../Pages/OwnerProfile/FoodManagementPage";
+import OrderManagementPage from "../Pages/OwnerProfile/OrderManagmentPage";
 
 export const routes = [
   {
@@ -100,6 +101,15 @@ export const routes = [
       </ProtectedRoute>
     ),
     name: "Food Management",
+  },
+  {
+    path: "/RestaurantOwner-profile/order-management",
+    element: (
+      <ProtectedRoute requiredRole="RestaurantOwner">
+        <OrderManagementPage />
+      </ProtectedRoute>
+    ),
+    name: "Order Management",
   },
   {
     path: "/order-success",

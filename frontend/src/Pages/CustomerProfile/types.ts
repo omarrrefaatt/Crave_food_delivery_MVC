@@ -4,6 +4,7 @@ export interface OrderItem {
   foodItemName: string;
   foodItemId: number;
   quantity: number;
+  price: number;
 }
 export interface ReviewData {
   rating: number;

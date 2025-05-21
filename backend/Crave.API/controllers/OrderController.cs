@@ -136,7 +136,29 @@ namespace Crave.API.controllers
                 return BadRequest("User ID not found in claims.");
             try
             {
-                var orders = await _orderService.GetOrdersDetailsByUserIdAsync(int.Parse(userId));
+                var orders = await _orderService.GetOrdersDetailsByUserIdAsync(int.Parse(userId),"customer");
+                return Ok(orders);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+                /// <summary>
+        /// Gets all orders for a specific restaurant
+        /// </summary>
+        [HttpGet("restaurant")]
+        [ProducesResponseType(typeof(List<OrderResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [Authorize]
+        public async Task<ActionResult<List<OrderDetailsResponse>>> GetMyRestaurantOrders()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return BadRequest("User ID not found in claims.");
+            try
+            {
+                var orders = await _orderService.GetOrdersDetailsByUserIdAsync(int.Parse(userId),"restaurant");
                 return Ok(orders);
             }
             catch (Exception ex)
@@ -207,7 +229,6 @@ namespace Crave.API.controllers
             if (request.OrderStatus != "Pending" && request.OrderStatus != "processing" && request.OrderStatus != "cancelled" && request.OrderStatus != "delivered")
                 return BadRequest("Order status must be either 'Pending', 'processing', 'cancelled' or 'delivered'");
 
-            request.userId = int.Parse(userId);
             try
             {
                 var order = await _orderService.UpdateOrderStatusAsync(id, request);

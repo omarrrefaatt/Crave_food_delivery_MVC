@@ -32,6 +32,7 @@
         public int FoodItemId { get; set; }
         public string FoodItemName { get; set; } = string.Empty;
         public int Quantity { get; set; }
+        public double price { get; set; } = 0;
         
     }
 }

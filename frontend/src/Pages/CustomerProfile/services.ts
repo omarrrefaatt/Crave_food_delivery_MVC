@@ -2,7 +2,7 @@ import { Order, ReviewData } from "./types";
 
 const profileAPI = import.meta.env.VITE_PROFILE_API;
 const orderAPI = import.meta.env.VITE_USER_ORDERS_API;
-const reviewAPI = import.meta.env.VITE_REVIEW_API;
+const reviewAPI = import.meta.env.VITE_reviews_API;
 
 export const get_current_customer = async (token: string) => {
   console.log(token);
@@ -51,6 +51,8 @@ export const submit_restaurant_review = async (
 
     body: JSON.stringify(ReviewData),
   });
+  console.log("ReviewData:", ReviewData);
+  console.log("Response from submit_restaurant_review:", response);
   if (!response.ok) {
     throw new Error("Failed to submit review");
   }

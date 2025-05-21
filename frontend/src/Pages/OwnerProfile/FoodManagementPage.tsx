@@ -12,6 +12,7 @@ import {
   FiList,
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import BackNavBar from "./components/BackNavBar";
 
 // Toast component for notifications
 interface ToastProps {
@@ -313,14 +314,7 @@ const RestaurantOwnerPage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-6">
-        <Link
-          to="/RestaurantOwner-profile"
-          className="flex items-center text-crimson"
-        >
-          <FiChevronLeft className="mr-1" /> Back to Dashboard
-        </Link>
-      </div>
+      <BackNavBar />
 
       <h1 className="text-2xl font-bold mb-6">Food Item Management</h1>
 
