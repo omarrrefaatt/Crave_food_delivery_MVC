@@ -118,7 +118,9 @@ const Dashboard: React.FC<DashboardProps> = ({ restaurants, loading }) => {
 
         <div className={styles.quickActionsGrid}>
           <div className={styles.actionCard}>
+
             <div className={styles.actionIcon}>🍽️</div>
+
             <h3 className={styles.actionTitle}>Add New Restaurant</h3>
             <p className={styles.actionDescription}>
               Create a new restaurant profile with details.
@@ -132,7 +134,9 @@ const Dashboard: React.FC<DashboardProps> = ({ restaurants, loading }) => {
           </div>
 
           <div className={styles.actionCard}>
+
             <div className={styles.actionIcon}>👤</div>
+
             <h3 className={styles.actionTitle}>Add New Manager</h3>
             <p className={styles.actionDescription}>
               Register a new restaurant manager.
@@ -146,7 +150,9 @@ const Dashboard: React.FC<DashboardProps> = ({ restaurants, loading }) => {
           </div>
 
           <div className={styles.actionCard}>
+
             <div className={styles.actionIcon}>📋</div>
+
             <h3 className={styles.actionTitle}>View Restaurants</h3>
             <p className={styles.actionDescription}>
               Manage existing restaurant profiles.
@@ -160,7 +166,9 @@ const Dashboard: React.FC<DashboardProps> = ({ restaurants, loading }) => {
           </div>
 
           <div className={styles.actionCard}>
+
             <div className={styles.actionIcon}>👥</div>
+
             <h3 className={styles.actionTitle}>View Managers</h3>
             <p className={styles.actionDescription}>
               Manage existing restaurant managers.

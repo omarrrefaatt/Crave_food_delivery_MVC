@@ -15,13 +15,16 @@ import SuccessMessage from "../../../Common/Components/Success-Message/successMe
 const ManagerManagement: React.FC = () => {
   const [managers, setManagers] = useState<Manager[]>([]);
   const [filteredManagers, setFilteredManagers] = useState<Manager[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedManager, setSelectedManager] = useState<Manager | null>(null);
+
   const [filterOption, setFilterOption] = useState<string>("all");
+
   const [newManager, setNewManager] = useState<
     Omit<Manager, "userId"> & { confirmPassword?: string }
   >({
@@ -111,6 +114,7 @@ const ManagerManagement: React.FC = () => {
         break;
     }
   };
+
 
   const fetchManagers = async () => {
     try {
@@ -248,6 +252,7 @@ const ManagerManagement: React.FC = () => {
     }
   };
 
+
   // Add this function after the state declarations
   const getManagerRoleColor = (userId: string): string => {
     // Create a deterministic color based on the user ID
@@ -292,6 +297,7 @@ const ManagerManagement: React.FC = () => {
     return matchedKey ? categoryMap[matchedKey] : { bg: "#ebf4ff", text: "#3182ce" };
   };
 
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.pageHeader}>
@@ -321,6 +327,7 @@ const ManagerManagement: React.FC = () => {
         </select>
       </div>
 
+
       {loading && !showAddModal ? (
         <div className={styles.loadingContainer}>
           <Loading />
@@ -338,6 +345,7 @@ const ManagerManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody>
+
               {filteredManagers.length > 0 ? (
                 filteredManagers.map((manager) => (
                   <tr key={manager.userId}>
@@ -419,12 +427,14 @@ const ManagerManagement: React.FC = () => {
                         <button
                           className={styles.editButton}
                           onClick={() => handleEdit(manager)}
+
                         >
                           Edit
                         </button>
                         <button
                           className={styles.deleteButton}
                           onClick={() => handleDelete(manager.userId)}
+
                         >
                           Delete
                         </button>
@@ -434,6 +444,7 @@ const ManagerManagement: React.FC = () => {
                 ))
               ) : (
                 <tr>
+
                   <td colSpan={5} className={styles.emptyTableMessage}>
                     <div className={styles.noDataContainer}>
                       <div className={styles.noDataIcon}>👤</div>
@@ -458,6 +469,7 @@ const ManagerManagement: React.FC = () => {
                         </button>
                       )}
                     </div>
+
                   </td>
                 </tr>
               )}

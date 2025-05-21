@@ -254,6 +254,7 @@ const RestaurantManagement: React.FC = () => {
     <div className={styles.pageContainer}>
       <div className={styles.pageHeader}>
         <h2 className={styles.pageTitle}>Restaurant Management</h2>
+
         <button
           className={`${styles.actionButton} ${styles.primaryButton}`}
           onClick={() => setShowAddModal(true)}
@@ -285,6 +286,7 @@ const RestaurantManagement: React.FC = () => {
               {restaurants.length > 0 ? (
                 restaurants.map((restaurant) => (
                   <tr key={restaurant.id}>
+
                     <td>
                       <div className={styles.nameCell}>
                         <div className={styles.avatarCircle} style={{ background: getCategoryColor(restaurant.category) }}>
@@ -324,6 +326,7 @@ const RestaurantManagement: React.FC = () => {
                     </td>
                     <td>
                       <div className={styles.actionButtons}>
+
                         <button className={styles.editButton}>Edit</button>
                         <button
                           className={styles.deleteButton}
@@ -337,6 +340,7 @@ const RestaurantManagement: React.FC = () => {
                 ))
               ) : (
                 <tr>
+t
                   <td colSpan={5} className={styles.emptyTableMessage}>
                     <div className={styles.noDataContainer}>
                       <div className={styles.noDataIcon}>🍽️</div>
@@ -348,6 +352,7 @@ const RestaurantManagement: React.FC = () => {
                         Add Your First Restaurant
                       </button>
                     </div>
+
                   </td>
                 </tr>
               )}
