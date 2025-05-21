@@ -14,12 +14,17 @@ import SuccessMessage from "../../../Common/Components/Success-Message/successMe
 
 const ManagerManagement: React.FC = () => {
   const [managers, setManagers] = useState<Manager[]>([]);
+  const [filteredManagers, setFilteredManagers] = useState<Manager[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedManager, setSelectedManager] = useState<Manager | null>(null);
+
+  const [filterOption, setFilterOption] = useState<string>("all");
+
   const [newManager, setNewManager] = useState<
     Omit<Manager, "userId"> & { confirmPassword?: string }
   >({
@@ -52,6 +57,64 @@ const ManagerManagement: React.FC = () => {
 
     fetchRestaurants();
   }, []);
+
+  // Apply filter whenever managers, restaurants, or filter option changes
+  useEffect(() => {
+    applyFilter(filterOption);
+  }, [managers, restaurants, filterOption]);
+
+  const applyFilter = (option: string) => {
+    if (!managers.length) {
+      setFilteredManagers([]);
+      return;
+    }
+
+    switch (option) {
+      case "assigned":
+        setFilteredManagers(
+          managers.filter(manager => {
+            // Check if manager is assigned to any restaurant
+            const isAssigned = restaurants.some(
+              restaurant => String(restaurant.managerId) === String(manager.userId)
+            );
+            
+            // Also check hardcoded assignments
+            const hardcodedAssignments: Record<string, string> = {
+              "351": "McDonald's",
+              "429": "McDonald's",
+              "321": "Burger King",
+            };
+            
+            return isAssigned || hardcodedAssignments[manager.userId];
+          })
+        );
+        break;
+      case "unassigned":
+        setFilteredManagers(
+          managers.filter(manager => {
+            // Check if manager is not assigned to any restaurant
+            const isAssigned = restaurants.some(
+              restaurant => String(restaurant.managerId) === String(manager.userId)
+            );
+            
+            // Also check hardcoded assignments
+            const hardcodedAssignments: Record<string, string> = {
+              "351": "McDonald's",
+              "429": "McDonald's",
+              "321": "Burger King",
+            };
+            
+            return !isAssigned && !hardcodedAssignments[manager.userId];
+          })
+        );
+        break;
+      case "all":
+      default:
+        setFilteredManagers(managers);
+        break;
+    }
+  };
+
 
   const fetchManagers = async () => {
     try {
@@ -189,6 +252,52 @@ const ManagerManagement: React.FC = () => {
     }
   };
 
+
+  // Add this function after the state declarations
+  const getManagerRoleColor = (userId: string): string => {
+    // Create a deterministic color based on the user ID
+    // This ensures the same manager always gets the same color
+    const colorOptions = [
+      'linear-gradient(135deg, #3949AB 0%, #303F9F 100%)',
+      'linear-gradient(135deg, #7B1FA2 0%, #6A1B9A 100%)',
+      'linear-gradient(135deg, #00897B 0%, #00796B 100%)',
+      'linear-gradient(135deg, #F57C00 0%, #EF6C00 100%)',
+      'linear-gradient(135deg, #a70000 0%, #d32f2f 100%)',
+    ];
+    
+    // Simple hash function to get a consistent index
+    const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colorOptions[hash % colorOptions.length];
+  };
+
+  const getRestaurantBadgeColor = (restaurantName: string | undefined): { bg: string, text: string } => {
+    if (!restaurantName || restaurantName === "Unassigned") {
+      return { bg: "#f7fafc", text: "#718096" };
+    }
+    
+    const categoryMap: Record<string, { bg: string, text: string }> = {
+      'McDonald': { bg: "#FFF3E0", text: "#E65100" },
+      'Burger': { bg: "#FFEBEE", text: "#C62828" },
+      'Asian': { bg: "#E8F5E9", text: "#2E7D32" },
+      'Japanese': { bg: "#FCE4EC", text: "#AD1457" },
+      'sushi': { bg: "#FCE4EC", text: "#AD1457" },
+      'restaurant': { bg: "#F3E5F5", text: "#6A1B9A" },
+      'omar': { bg: "#FFEBEE", text: "#C62828" },
+      'kababdy': { bg: "#FFEBEE", text: "#C62828" },
+    };
+    
+    // Normalize the name for case-insensitive matching
+    const normalizedName = restaurantName.toLowerCase();
+    
+    // Find a matching category (partial match)
+    const matchedKey = Object.keys(categoryMap).find(key => 
+      normalizedName.includes(key.toLowerCase())
+    );
+    
+    return matchedKey ? categoryMap[matchedKey] : { bg: "#ebf4ff", text: "#3182ce" };
+  };
+
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.pageHeader}>
@@ -203,6 +312,21 @@ const ManagerManagement: React.FC = () => {
 
       {error && <ErrorMessage text={error} isVisible={!!error} />}
       {success && <SuccessMessage text={success} isVisible={!!success} />}
+
+      <div className={styles.filterContainer}>
+        <label htmlFor="filter" className={styles.filterLabel}>Filter by:</label>
+        <select
+          id="filter"
+          value={filterOption}
+          onChange={(e) => setFilterOption(e.target.value)}
+          className={styles.filterSelect}
+        >
+          <option value="all">All Managers</option>
+          <option value="assigned">Assigned to Restaurant</option>
+          <option value="unassigned">Unassigned</option>
+        </select>
+      </div>
+
 
       {loading && !showAddModal ? (
         <div className={styles.loadingContainer}>
@@ -221,69 +345,96 @@ const ManagerManagement: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {managers.length > 0 ? (
-                managers.map((manager) => (
+
+              {filteredManagers.length > 0 ? (
+                filteredManagers.map((manager) => (
                   <tr key={manager.userId}>
-                    <td style={{ color: "#718096", fontSize: "0.875rem" }}>
-                      {manager.userId}
-                    </td>
-                    <td>{manager.name}</td>
                     <td>
-                      <div>{manager.email}</div>
-                      <div style={{ color: "#718096", fontSize: "0.875rem" }}>
-                        {manager.phone || "555-123-4567"}
+                      <span className={styles.idBadge}>{manager.userId}</span>
+                    </td>
+                    <td>
+                      <div className={styles.nameCell}>
+                        <div className={styles.avatarCircle} style={{ background: getManagerRoleColor(manager.userId) }}>
+                          {manager.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span>{manager.name}</span>
                       </div>
                     </td>
                     <td>
-                      <span
-                        className={styles.restaurantBadge}
-                        style={{ backgroundColor: "#ebf4ff", color: "#3182ce" }}
-                      >
-                        {(() => {
-                          // Find restaurant assignment based on manager ID
-                          const matchedRestaurant = restaurants.find(
-                            (r) => String(r.managerId) == String(manager.userId)
-                          );
-                          console.log("restaurant", restaurants);
-                          console.log("matchedRestaurant", matchedRestaurant);
-                          console.log("managerID", manager.userId);
-
-                          // If no restaurant is found, check if we have any hardcoded assignments
-                          if (!matchedRestaurant) {
-                            // Map of manager IDs to restaurant names for testing
-                            const hardcodedAssignments: Record<string, string> =
-                              {
-                                "351": "McDonald's",
-                                "429": "McDonald's",
-                                "321": "Burger King",
-                                "126": "Unassigned",
-                                "450": "Unassigned",
-                                "836": "Unassigned",
-                              };
-
-                            return (
-                              hardcodedAssignments[manager.userId] ||
-                              "Unassigned"
-                            );
-                          }
-
-                          return matchedRestaurant.name;
-                        })()}
-                      </span>
+                      <div className={styles.contactInfo}>
+                        <div className={styles.emailAddress}>
+                          <span className={styles.contactIcon}>✉️</span>
+                          {manager.email}
+                        </div>
+                        <div className={styles.phoneNumber}>
+                          <span className={styles.contactIcon}>📱</span>
+                          {manager.phone || "555-123-4567"}
+                        </div>
+                      </div>
                     </td>
                     <td>
-                      <div style={{ display: "flex", gap: "10px" }}>
+                      {(() => {
+                        // Find restaurant assignment based on manager ID
+                        const matchedRestaurant = restaurants.find(
+                          (r) => String(r.managerId) == String(manager.userId)
+                        );
+                        
+                        // If no restaurant is found, check if we have any hardcoded assignments
+                        if (!matchedRestaurant) {
+                          // Map of manager IDs to restaurant names for testing
+                          const hardcodedAssignments: Record<string, string> = {
+                            "351": "McDonald's",
+                            "429": "McDonald's",
+                            "321": "Burger King",
+                            "126": "Unassigned",
+                            "450": "Unassigned",
+                            "836": "Unassigned",
+                          };
+
+                          const restaurantName = hardcodedAssignments[manager.userId] || "Unassigned";
+                          const badgeColor = getRestaurantBadgeColor(restaurantName);
+
+                          return (
+                            <span
+                              className={styles.restaurantBadge}
+                              style={{ 
+                                backgroundColor: badgeColor.bg, 
+                                color: badgeColor.text 
+                              }}
+                            >
+                              {restaurantName}
+                            </span>
+                          );
+                        }
+
+                        const badgeColor = getRestaurantBadgeColor(matchedRestaurant.name);
+                        
+                        return (
+                          <span
+                            className={styles.restaurantBadge}
+                            style={{ 
+                              backgroundColor: badgeColor.bg, 
+                              color: badgeColor.text 
+                            }}
+                          >
+                            {matchedRestaurant.name}
+                          </span>
+                        );
+                      })()}
+                    </td>
+                    <td>
+                      <div className={styles.actionButtons}>
                         <button
                           className={styles.editButton}
                           onClick={() => handleEdit(manager)}
-                          style={{ color: "#3182ce", fontWeight: 500 }}
+
                         >
                           Edit
                         </button>
                         <button
                           className={styles.deleteButton}
                           onClick={() => handleDelete(manager.userId)}
-                          style={{ color: "#e53e3e", fontWeight: 500 }}
+
                         >
                           Delete
                         </button>
@@ -293,8 +444,32 @@ const ManagerManagement: React.FC = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: "center" }}>
-                    No managers found
+
+                  <td colSpan={5} className={styles.emptyTableMessage}>
+                    <div className={styles.noDataContainer}>
+                      <div className={styles.noDataIcon}>👤</div>
+                      <p>{filterOption !== "all" 
+                        ? `No ${filterOption === "assigned" ? "assigned" : "unassigned"} managers found` 
+                        : "No managers found"}
+                      </p>
+                      {filterOption === "all" && (
+                        <button 
+                          className={`${styles.actionButton} ${styles.primaryButton}`}
+                          onClick={() => setShowAddModal(true)}
+                        >
+                          Add Your First Manager
+                        </button>
+                      )}
+                      {filterOption !== "all" && (
+                        <button 
+                          className={`${styles.actionButton} ${styles.secondaryButton}`}
+                          onClick={() => setFilterOption("all")}
+                        >
+                          View All Managers
+                        </button>
+                      )}
+                    </div>
+
                   </td>
                 </tr>
               )}

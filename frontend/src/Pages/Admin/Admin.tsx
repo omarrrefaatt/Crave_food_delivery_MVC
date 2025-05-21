@@ -12,7 +12,9 @@ const AdminPage: React.FC = () => {
   const [activeView, setActiveView] = useState<'dashboard' | 'restaurants' | 'managers'>('dashboard');
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuthContext();
+
+  const { user, dispatch } = useAuthContext();
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -61,11 +63,30 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  const handleSignOut = () => {
+    // Remove user data from localStorage
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    
+    // Dispatch logout action
+    dispatch({ type: 'LOGOUT' });
+    
+    // Redirect to login page
+    navigate('/login');
+  };
+
+
   return (
     <div>
       {/* Top Bar */}
       <div className={styles.topBar}>
         <div className={styles.topBarTitle}>Crave Admin</div>
+
+        <div className={styles.signOutButton} onClick={handleSignOut}>
+          <span className={styles.signOutIcon}>🚪</span>
+          Sign Out
+        </div>
+
       </div>
 
       {/* Sidebar */}
@@ -91,6 +112,14 @@ const AdminPage: React.FC = () => {
           <span className={styles.navIcon}>👤</span>
           Managers
         </div>
+
+        <div className={styles.sidebarFooter}>
+          <div className={styles.navItem} onClick={handleSignOut}>
+            <span className={styles.navIcon}>🚪</span>
+            Sign Out
+          </div>
+        </div>
+
       </div>
 
       {/* Main Content */}

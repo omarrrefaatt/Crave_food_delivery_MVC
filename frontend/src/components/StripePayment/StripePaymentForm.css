@@ -1,0 +1,85 @@
+.stripe-payment-form {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.form-row {
+  margin-bottom: 20px;
+}
+
+.form-row label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #424770;
+}
+
+.card-element-container {
+  padding: 12px;
+  border: 1px solid #e6e6e6;
+  border-radius: 6px;
+  background-color: white;
+  transition: box-shadow 150ms ease;
+}
+
+.card-element-container:focus-within {
+  box-shadow: 0 0 0 2px rgba(50, 151, 211, 0.3);
+  outline: none;
+}
+
+.card-error {
+  color: #dc3545;
+  font-size: 14px;
+  margin-top: 8px;
+  margin-bottom: 16px;
+}
+
+.test-card-info {
+  margin-bottom: 16px;
+  padding: 12px;
+  background-color: #e8f4fd;
+  border: 1px solid #c5e1f9;
+  border-radius: 6px;
+}
+
+.stripe-payment-button {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  background-color: #22c55e;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.stripe-payment-button:hover {
+  background-color: #16a34a;
+}
+
+.stripe-payment-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+} 

@@ -82,13 +82,13 @@ const RestaurantPage: React.FC = () => {
     <div>
       <Navbar />
 
-      <div className="flex flex-col justify-start items-center relative max-w-full h-screen font-serif">
-        {/* Navbar Container*/}
-        =
+      <div className="flex flex-col justify-start items-center relative max-w-full min-h-screen font-serif">
         <hr className="bg-gray-100 -translate-y-[14px] w-full mb-10" />
-        <div className="flex flex-row justify-around items-start space-x-8">
+        <div className="flex flex-row justify-between items-start w-full px-8">
+          {/* Left sidebar with filters - this stays fixed */}
+          <div className="w-96 sticky top-0">
           <ReusableCard backgroundColor="white">
-            <div className="flex flex-col justify-start items-center shadow-lg p-4 w-96">
+              <div className="flex flex-col justify-start items-center shadow-lg p-4 w-full">
               <div className="flex flex-row justify-between py-2 font-serif items-center text-gray-400 w-full space-x-2">
                 <input
                   type="text"
@@ -189,15 +189,57 @@ const RestaurantPage: React.FC = () => {
               </div>
             </div>
           </ReusableCard>
+          </div>
 
+          {/* Right content area - this is where restaurants or "no results" will show */}
+          <div className="w-[calc(100%-26rem)] bg-white rounded-lg shadow-lg min-h-[600px]">
           {/* Restaurants Container */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-6 shadow-lg mb-5 grid-rows-2">
-            {isRestaurantCardsLoading && <Loading />}
-            {paginatedRestaurants &&
-              paginatedRestaurants.map((restaurant, index) => (
+            <div className="p-6">
+              {isRestaurantCardsLoading && (
+                <div className="flex justify-center items-center min-h-[500px]">
+                  <Loading />
+                </div>
+              )}
+              
+              {!isRestaurantCardsLoading && paginatedRestaurants.length === 0 && (
+                <div className="flex flex-col items-center justify-center min-h-[500px]">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-16 h-16 text-gray-400 mb-4"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15.182 16.318A4.486 4.486 0 0 0 12.016 15a4.486 4.486 0 0 0-3.198 1.318M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z"
+                    />
+                  </svg>
+                  <h3 className="text-xl font-medium text-gray-900 mb-2">No restaurants found</h3>
+                  <p className="text-gray-600 text-center">
+                    We couldn't find any restaurants matching your search criteria.
+                  </p>
+                  <button 
+                    onClick={() => {
+                      setSearchTerm("");
+                      setSelectedFilter("");
+                      setFilteredRestaurants(restaurants);
+                    }}
+                    className="mt-4 px-4 py-2 bg-crimson text-white rounded-md hover:bg-red-700 transition-colors"
+                  >
+                    Clear Search
+                  </button>
+                </div>
+              )}
+              
+              {paginatedRestaurants.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {paginatedRestaurants.map((restaurant, index) => (
                 <div
                   key={index}
-                  className="max-w-[450px] min-w-[400px] max-h-[300px] min-h-[250px]"
+                      className="max-w-[450px] min-w-[300px] max-h-[300px] min-h-[250px]"
                 >
                   <ReusableCard backgroundColor="white">
                     <div className="p-4 w-full">
@@ -284,8 +326,12 @@ const RestaurantPage: React.FC = () => {
                 </div>
               ))}
           </div>
+              )}
         </div>
+            
         {/* Pagination Controls */}
+            {filteredRestaurants.length > 0 && (
+              <div className="py-4">
         <ReactPaginate
           previousLabel={
             <svg
@@ -323,12 +369,16 @@ const RestaurantPage: React.FC = () => {
           onPageChange={(selectedPage: { selected: number }) => {
             setCurrentPage(selectedPage.selected);
           }}
-          containerClassName="flex justify-center flex-row space-x-2 my-4 ml-40"
+                  containerClassName="flex justify-center flex-row space-x-2 my-4"
           pageClassName="cursor-pointer px-4 py-2 bg-gray-100 rounded-full"
           activeClassName="bg-gray-900 text-white"
           previousClassName="cursor-pointer p-2 bg-gray-100 rounded-full hover:bg-black hover:text-white"
           nextClassName="cursor-pointer p-2 bg-gray-100 rounded-full hover:bg-black hover:text-white"
         />
+              </div>
+            )}
+          </div>
+        </div>
         <Footer />
       </div>
     </div>

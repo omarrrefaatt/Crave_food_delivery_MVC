@@ -36,8 +36,8 @@ const FoodItemCard: React.FC<FoodItemCardProps> = ({
   };
 
   return (
-    <div className="border rounded-lg shadow-md overflow-hidden mb-4">
-      <div className="p-4">
+    <div className="border rounded-lg shadow-md overflow-hidden mb-4 flex flex-col">
+      <div className="p-4 flex-grow">
         <div className="flex justify-between items-start">
           <div className="flex-1">
             <h3 className="text-xl font-bold">{foodItem.name}</h3>
@@ -84,10 +84,12 @@ const FoodItemCard: React.FC<FoodItemCardProps> = ({
             />
           </div>
         </div>
+      </div>
 
+      <div className="p-4 mt-auto">
         <button
           onClick={handleAddClick}
-          className="mt-3 bg-crimson hover:bg-gray-800 text-white py-2 px-4 rounded-md w-full transition-colors"
+          className="bg-crimson hover:bg-gray-800 text-white py-2 px-4 rounded-md w-full transition-colors"
         >
           {isExpanded ? "Cancel" : "Add"}
         </button>
