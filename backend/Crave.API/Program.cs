@@ -33,6 +33,7 @@ builder.Services.AddScoped<IFoodItemService, FoodItemService>();
 builder.Services.AddScoped<IFoodItemService, FoodItemService>();
 builder.Services.AddScoped<IRestaurantService, RestaurantService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 
 // Add JWT Authentication

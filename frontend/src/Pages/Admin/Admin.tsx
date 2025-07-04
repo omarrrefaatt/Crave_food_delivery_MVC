@@ -1,41 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import styles from './Admin.module.css';
-import RestaurantManagement from './components/RestaurantManagement';
-import ManagerManagement from './components/ManagerManagement';
-import Dashboard from './components/Dashboard';
-import { useAuthContext } from '../../Common/Contexts/Auth/AuthHook';
-import { getAllRestaurants } from './services';
-import { Restaurant } from './types';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import styles from "./Admin.module.css";
+import RestaurantManagement from "./components/RestaurantManagement";
+import ManagerManagement from "./components/ManagerManagement";
+import Dashboard from "./components/Dashboard";
+import { useAuthContext } from "../../Common/Contexts/Auth/AuthHook";
+import { getAllRestaurants } from "./services";
+import { Restaurant } from "./types";
 
 const AdminPage: React.FC = () => {
-  const [activeView, setActiveView] = useState<'dashboard' | 'restaurants' | 'managers'>('dashboard');
+  const [activeView, setActiveView] = useState<
+    "dashboard" | "restaurants" | "managers"
+  >("dashboard");
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
 
   const { user, dispatch } = useAuthContext();
-
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    // Set active view based on URL path
-    const path = location.pathname.split('/').pop();
-    if (path === 'restaurants') {
-      setActiveView('restaurants');
-    } else if (path === 'managers') {
-      setActiveView('managers');
+    const path = location.pathname.split("/").pop();
+    if (path === "restaurants") {
+      setActiveView("restaurants");
+    } else if (path === "managers") {
+      setActiveView("managers");
     } else {
-      setActiveView('dashboard');
+      setActiveView("dashboard");
     }
 
-    // Fetch restaurants for stats
     const fetchRestaurants = async () => {
       try {
         const data = await getAllRestaurants();
         setRestaurants(data);
       } catch (error) {
-        console.error('Error fetching restaurants:', error);
+        console.error("Failed to fetch restaurants:", error);
       } finally {
         setLoading(false);
       }
@@ -44,90 +43,77 @@ const AdminPage: React.FC = () => {
     fetchRestaurants();
   }, [location.pathname]);
 
-  // Check if user is authenticated and has admin role
-  if (!user || user.role !== 'admin') {
+  if (!user || user.role !== "admin") {
     return (
       <div className={styles.adminContainer}>
-        <h2>Unauthorized Access</h2>
-        <p>You must be logged in as an admin to view this page.</p>
+        <h2>Access Denied</h2>
+        <p>You must be an admin to access this page.</p>
       </div>
     );
   }
 
-  const handleNavigation = (view: 'dashboard' | 'restaurants' | 'managers') => {
+  const handleNavigation = (view: "dashboard" | "restaurants" | "managers") => {
     setActiveView(view);
-    if (view === 'dashboard') {
-      navigate('/admin-profile');
-    } else {
-      navigate(`/admin-profile/${view}`);
-    }
+    const route =
+      view === "dashboard" ? "/admin-profile" : `/admin-profile/${view}`;
+    navigate(route);
   };
 
   const handleSignOut = () => {
-    // Remove user data from localStorage
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    
-    // Dispatch logout action
-    dispatch({ type: 'LOGOUT' });
-    
-    // Redirect to login page
-    navigate('/login');
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    dispatch({ type: "LOGOUT" });
+    navigate("/login");
   };
 
-
   return (
-    <div>
+    <div className={styles.adminPage}>
       {/* Top Bar */}
-      <div className={styles.topBar}>
-        <div className={styles.topBarTitle}>Crave Admin</div>
-
-        <div className={styles.signOutButton} onClick={handleSignOut}>
-          <span className={styles.signOutIcon}>🚪</span>
+      <header className={styles.topBar}>
+        <div className={styles.brand}>Crave Admin Panel</div>
+        <button className={styles.logoutButton} onClick={handleSignOut}>
           Sign Out
-        </div>
+        </button>
+      </header>
 
-      </div>
-
-      {/* Sidebar */}
-      <div className={styles.sidebarContainer}>
-        <div 
-          className={`${styles.navItem} ${activeView === 'dashboard' ? styles.navItemActive : ''}`}
-          onClick={() => handleNavigation('dashboard')}
-        >
-          <span className={styles.navIcon}>📊</span>
-          Dashboard
-        </div>
-        <div 
-          className={`${styles.navItem} ${activeView === 'restaurants' ? styles.navItemActive : ''}`}
-          onClick={() => handleNavigation('restaurants')}
-        >
-          <span className={styles.navIcon}>🍽️</span>
-          Restaurants
-        </div>
-        <div 
-          className={`${styles.navItem} ${activeView === 'managers' ? styles.navItemActive : ''}`}
-          onClick={() => handleNavigation('managers')}
-        >
-          <span className={styles.navIcon}>👤</span>
-          Managers
-        </div>
-
-        <div className={styles.sidebarFooter}>
-          <div className={styles.navItem} onClick={handleSignOut}>
-            <span className={styles.navIcon}>🚪</span>
-            Sign Out
+      {/* Sidebar Navigation */}
+      <aside className={styles.sidebar}>
+        <nav>
+          <div
+            className={`${styles.navItem} ${
+              activeView === "dashboard" ? styles.active : ""
+            }`}
+            onClick={() => handleNavigation("dashboard")}
+          >
+            Dashboard
           </div>
-        </div>
+          <div
+            className={`${styles.navItem} ${
+              activeView === "restaurants" ? styles.active : ""
+            }`}
+            onClick={() => handleNavigation("restaurants")}
+          >
+            Restaurants
+          </div>
+          <div
+            className={`${styles.navItem} ${
+              activeView === "managers" ? styles.active : ""
+            }`}
+            onClick={() => handleNavigation("managers")}
+          >
+            Managers
+          </div>
+        </nav>
+      </aside>
 
-      </div>
-
-      {/* Main Content */}
-      <div className={styles.mainContent}>
-        {activeView === 'dashboard' && <Dashboard restaurants={restaurants} loading={loading} />}
-        {activeView === 'restaurants' && <RestaurantManagement />}
-        {activeView === 'managers' && <ManagerManagement />}
-      </div>
+      {/* Main Content Area */}
+      <main className={styles.mainContent}>
+        {activeView === "dashboard" && (
+          <Dashboard restaurants={restaurants} loading={loading} />
+        )}
+        {activeView === "restaurants" && <RestaurantManagement />}
+        {activeView === "managers" && <ManagerManagement />}
+      </main>
     </div>
   );
 };

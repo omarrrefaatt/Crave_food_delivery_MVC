@@ -1,8 +1,9 @@
-import { Restaurant, Manager, createManager } from "./types";
+import { Restaurant, Manager, createManager, DashboardStats } from "./types";
 
 const restaurantAPI = import.meta.env.VITE_GET_ALL_RESTAURANTS_API;
 const orderAPI = import.meta.env.VITE_USER_ORDERS_API;
 const userAPI = import.meta.env.VITE_USER_API;
+const statisticsAPI = import.meta.env.VITE_ADMIN_STATISTICS_API;
 
 const getAuthToken = (): string => {
   try {
@@ -330,6 +331,33 @@ export const deleteManager = async (id: string): Promise<void> => {
     await handleResponse(response);
   } catch (error) {
     console.error("Error deleting restaurant manager:", error);
+    throw error;
+  }
+};
+
+export const getStatistics = async (): Promise<DashboardStats> => {
+  try {
+    const response = await fetch(`${statisticsAPI}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${getAuthToken()}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        "Server error response when fetching statistics:",
+        errorText
+      );
+      throw new Error(errorText || `Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching statistics:", error);
     throw error;
   }
 };

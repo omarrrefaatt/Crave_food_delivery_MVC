@@ -43,3 +43,17 @@ export interface DashboardStats {
   orders: number;
   customers: number;
 }
+
+export interface DashboardStats {
+  totalUsers: number;
+  totalClients: number;
+  totalManagers: number;
+  totalAdmins: number;
+  categoriesNumberOfRestaurts: Record<string, number>; // All dynamic
+  totalRestaurants: number;
+  totalOrders: number;
+  averageOrderValue: number;
+  totalRevenue: number;
+  totalFoodItems: number;
+  totalReviews: number;
+}
