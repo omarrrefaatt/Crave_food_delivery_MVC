@@ -43,13 +43,13 @@ namespace Crave.API.Controllers
             return CreatedAtAction(nameof(GetReviewsForRestaurant), new { restaurantId = review.RestaurantId }, review);
         }
 
-        [HttpGet("restaurant/{restaurantId}")]
+        [HttpGet("restaurant")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [Authorize]
     
-        public async Task<IActionResult> GetReviewsForRestaurant(int restaurantId)
+        public async Task<IActionResult> GetReviewsForRestaurant()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
@@ -57,7 +57,7 @@ namespace Crave.API.Controllers
             if (User.FindFirst(ClaimTypes.Role)?.Value != "RestaurantOwner")
                 return BadRequest("User is not the owner of the restaurant.");
     
-            var reviews = await _reviewService.GetByRestaurantIdAsync(restaurantId,int.Parse(userId));
+            var reviews = await _reviewService.GetByRestaurantIdAsync(int.Parse(userId));
             return Ok(reviews);
         }
     }

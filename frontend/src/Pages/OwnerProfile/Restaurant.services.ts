@@ -1,26 +1,7 @@
 // src/services/RestaurantService.ts
 import axios from "axios";
-
-// Define the Restaurant interface
-export interface Restaurant {
-  id: number;
-  name: string;
-  rating: number;
-  location: string;
-  description: string;
-  category: string;
-  avgDeliveryTime: number;
-  contactInfo: string;
-  operatingHours: string;
-  imageUrl: string;
-  totalRevnue: number;
-  totalSucsessOrders: number;
-  totalOrders: number;
-  totalCancelledOrders: number;
-  reviews: any[] | null;
-}
-
-const API_URL = "http://localhost:5231/api";
+const restaurantAPI = import.meta.env.VITE_GET_ALL_RESTAURANTS_API;
+import { Restaurant } from "./types";
 
 export const getMyRestaurant = async (): Promise<Restaurant> => {
   const tokenData = localStorage.getItem("token");
@@ -29,7 +10,7 @@ export const getMyRestaurant = async (): Promise<Restaurant> => {
   }
   const token = JSON.parse(tokenData);
   try {
-    const response = await axios.get(`${API_URL}/Restaurant/getMyRestaurant`, {
+    const response = await axios.get(`${restaurantAPI}/getMyRestaurant`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",

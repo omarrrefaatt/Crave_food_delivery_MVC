@@ -74,3 +74,24 @@ export const cancel_order = async (
     throw new Error("Failed to cancel order: " + errorText);
   }
 };
+
+export const update_customer_profile = async (
+  token: string,
+  customerData: any
+): Promise<any> => {
+  const response = await fetch(`${profileAPI}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `bearer ${token}`,
+    },
+    body: JSON.stringify(customerData),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error("Failed to update profile: " + errorText);
+  }
+
+  return await response.json();
+};

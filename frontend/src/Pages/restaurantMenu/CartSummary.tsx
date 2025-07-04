@@ -40,8 +40,9 @@ const CartSummary: React.FC<CartSummaryProps> = ({
 
   const handleCheckout = (): void => {
     // Navigate to checkout page
-    const userId = localStorage.getItem("userId");
-    if (!userId) {
+    const token = localStorage.getItem("token");
+    console.log("Token:", token);
+    if (!token) {
       alert("Please log in to proceed to checkout.");
       navigate("/login");
       return;

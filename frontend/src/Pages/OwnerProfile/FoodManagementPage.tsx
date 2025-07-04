@@ -7,11 +7,9 @@ import {
   FiTrash2,
   FiPlus,
   FiSearch,
-  FiChevronLeft,
   FiGrid,
   FiList,
 } from "react-icons/fi";
-import { Link } from "react-router-dom";
 import BackNavBar from "./components/BackNavBar";
 
 // Toast component for notifications
@@ -100,14 +98,11 @@ const RestaurantOwnerPage: React.FC = () => {
 
   // Configure axios with authentication token
   useEffect(() => {
-    // In a real app, you'd get this from your auth context or localStorage
     const token = localStorage.getItem("token");
     setAuthToken(token);
-
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
-
     return () => {
       delete axios.defaults.headers.common["Authorization"];
     };

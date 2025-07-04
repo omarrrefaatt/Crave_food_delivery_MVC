@@ -16,7 +16,7 @@ export interface FoodItemFormData {
   name: string;
   description: string;
   rating: number;
-  restaurantId: number;
+  restaurantId?: number; // Make this optional since we'll handle it automatically
   imageUrl: string;
   price: number;
 }

@@ -13,7 +13,6 @@ const defaultFormData: FoodItemFormData = {
   name: "",
   description: "",
   rating: 5,
-  restaurantId: 0,
   imageUrl: "",
   price: 0,
 };
@@ -32,7 +31,6 @@ const EnhancedFoodItemForm: React.FC<FoodItemFormProps> = ({
   const [touched, setTouched] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    // Update form data if initialData changes (for edit mode)
     setFormData(initialData);
     setImagePreview(initialData.imageUrl || null);
     setTouched({});
@@ -53,12 +51,7 @@ const EnhancedFoodItemForm: React.FC<FoodItemFormProps> = ({
     }
 
     if (formData.rating < 1 || formData.rating > 5) {
-      newErrors.rating = "Rating must be buusonedetween 1 and 5";
-      isValid = false;
-    }
-
-    if (formData.restaurantId <= 0) {
-      newErrors.restaurantId = "Valid restaurant ID is required";
+      newErrors.rating = "Rating must be between 1 and 5";
       isValid = false;
     }
 
@@ -96,10 +89,6 @@ const EnhancedFoodItemForm: React.FC<FoodItemFormProps> = ({
         return Number(value) < 1 || Number(value) > 5
           ? "Rating must be between 1 and 5"
           : undefined;
-      case "restaurantId":
-        return Number(value) <= 0
-          ? "Valid restaurant ID is required"
-          : undefined;
       case "imageUrl":
         if (!String(value).trim()) return "Image URL is required";
         try {
@@ -122,9 +111,7 @@ const EnhancedFoodItemForm: React.FC<FoodItemFormProps> = ({
   ) => {
     const { name, value } = e.target;
     const newValue =
-      name === "rating" || name === "price" || name === "restaurantId"
-        ? parseFloat(value)
-        : value;
+      name === "rating" || name === "price" ? parseFloat(value) : value;
 
     setFormData((prev) => ({
       ...prev,
@@ -316,34 +303,6 @@ const EnhancedFoodItemForm: React.FC<FoodItemFormProps> = ({
                   </p>
                 )}
               </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="restaurantId"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Restaurant ID *
-              </label>
-              <input
-                type="number"
-                id="restaurantId"
-                name="restaurantId"
-                min="1"
-                value={formData.restaurantId}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                className={`w-full px-4 py-2 border rounded-md focus:ring-2 focus:outline-none ${
-                  errors.restaurantId
-                    ? "border-red-500 focus:ring-red-200"
-                    : "border-gray-300 focus:ring-blue-200"
-                }`}
-              />
-              {errors.restaurantId && (
-                <p className="mt-1 text-sm text-red-500 flex items-center">
-                  <FiAlertCircle className="mr-1" /> {errors.restaurantId}
-                </p>
-              )}
             </div>
 
             <div>

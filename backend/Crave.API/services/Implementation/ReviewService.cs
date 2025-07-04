@@ -77,23 +77,19 @@ namespace Crave.API.Services.Implementation
             };
         
         }
-        public async Task<IEnumerable<ReviewReadDto>> GetByRestaurantIdAsync(int restaurantId,int managerId)
+        public async Task<IEnumerable<ReviewReadDto>> GetByRestaurantIdAsync(int managerId)
         {
             // Check if the restaurant exists
-            var restaurant = await _context.Restaurants.FindAsync(restaurantId);
+            var restaurant = await _context.Restaurants
+                .FirstOrDefaultAsync(r => r.managerId == managerId);
             if (restaurant == null)
             {
                 throw new ArgumentException("Restaurant not found.");
             }
-            if (restaurant.managerId != managerId)
-            {
-                throw new ArgumentException("You are not authorized to view reviews for this restaurant.");
-            }
-
-            // Get reviews for the restaurant
-        {
+        
             var reviews = await _context.Reviews
-                .Where(r => r.RestaurantId == restaurantId)
+            .Include(r => r.User)
+                .Where(r => r.RestaurantId == restaurant.Id)
                 .ToListAsync();
 
             return reviews.Select(r => new ReviewReadDto
@@ -101,10 +97,11 @@ namespace Crave.API.Services.Implementation
                 Id = r.Id,
                 RestaurantId = r.RestaurantId,
                 UserId = r.UserId,
+                userName = r.User?.Name ?? "Unknown User",
                 Rating = r.Rating,
                 Comment = r.Comments,
                 CreatedAt = r.CreatedAt
             });
-        }
+        
     }
     }}

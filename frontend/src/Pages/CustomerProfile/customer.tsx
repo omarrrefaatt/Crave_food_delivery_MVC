@@ -19,6 +19,7 @@ import {
   get_customer_orders,
   submit_restaurant_review,
   cancel_order,
+  update_customer_profile,
 } from "./services";
 import { CustomerData, Order, ReviewData } from "./types";
 
@@ -26,6 +27,21 @@ const Customer: React.FC = () => {
   const [customerData, setCustomerData] = useState<CustomerData | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [activeFilter, setActiveFilter] = useState<string>("all");
+
+  // Edit profile states
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [editFormData, setEditFormData] = useState<CustomerData>({
+    userId: "",
+    name: "",
+    phone: "",
+    email: "",
+    address: "",
+    zipCode: "",
+    cardId: "",
+  });
+  const [editLoading, setEditLoading] = useState<boolean>(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editSuccess, setEditSuccess] = useState<boolean>(false);
 
   // Review modal states
   const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
@@ -225,10 +241,73 @@ const Customer: React.FC = () => {
     setCancelError("");
   };
 
+  // Edit profile functions
+  const handleEditClick = () => {
+    if (customerData) {
+      setEditFormData(customerData);
+      setIsEditMode(true);
+      setEditError(null);
+      setEditSuccess(false);
+    }
+  };
+
+  const handleEditCancel = () => {
+    setIsEditMode(false);
+    setEditFormData({
+      userId: "",
+      name: "",
+      phone: "",
+      email: "",
+      address: "",
+      zipCode: "",
+      cardId: "",
+    });
+    setEditError(null);
+    setEditSuccess(false);
+  };
+
+  const handleEditInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setEditFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setEditLoading(true);
+    setEditError(null);
+
+    const tokenString = localStorage.getItem("token");
+    if (!tokenString) {
+      setEditError("No authentication token found");
+      setEditLoading(false);
+      return;
+    }
+
+    const token = JSON.parse(tokenString);
+
+    try {
+      await update_customer_profile(token, editFormData);
+      setCustomerData(editFormData);
+      setEditSuccess(true);
+      setTimeout(() => {
+        setIsEditMode(false);
+        setEditSuccess(false);
+      }, 2000);
+    } catch (error: any) {
+      setEditError(error.message || "Failed to update profile");
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   return (
     <div className={styles.customerContainer}>
       <Navbar />
-
       {/* Dashboard Header */}
       <div className={styles.dashboardHeader}>
         <div className={styles.headerContent}>
@@ -243,8 +322,11 @@ const Customer: React.FC = () => {
           <div className={styles.profileCard}>
             <div className={styles.profileCardHeader}>
               <h2 className={styles.sectionTitle}>Profile Information</h2>
-              <div className={styles.editIcon}>
-                <FaEdit />
+              <div>
+                <FaEdit
+                  onClick={handleEditClick}
+                  style={{ cursor: "pointer" }}
+                />
               </div>
             </div>
             <div className={styles.profileImageContainer}>
@@ -261,41 +343,148 @@ const Customer: React.FC = () => {
               </p>
             </div>
             <div className={styles.contactDetails}>
-              <p>
-                <FaPhoneAlt className={styles.icon} />
-                <span>Phone</span>
-                <span className={styles.contactValue}>
-                  {customerData?.phone || "N/A"}
-                </span>
-              </p>
-              <p>
-                <FaEnvelope className={styles.icon} />
-                <span>Email</span>
-                <span className={styles.contactValue}>
-                  {customerData?.email || "N/A"}
-                </span>
-              </p>
-              <p>
-                <FaMapMarkerAlt className={styles.icon} />
-                <span>Address</span>
-                <span className={styles.contactValue}>
-                  {customerData?.address || "N/A"}
-                </span>
-              </p>
-              <p>
-                <FaZipCode className={styles.icon} />
-                <span>Zip Code</span>
-                <span className={styles.contactValue}>
-                  {customerData?.zipCode || "N/A"}
-                </span>
-              </p>
-              <p>
-                <FaCreditCard className={styles.icon} />
-                <span>Card ID</span>
-                <span className={styles.contactValue}>
-                  {customerData?.cardId || "N/A"}
-                </span>
-              </p>
+              {!isEditMode ? (
+                // Display Mode
+                <>
+                  <p>
+                    <FaPhoneAlt className={styles.icon} />
+                    <span>Phone</span>
+                    <span className={styles.contactValue}>
+                      {customerData?.phone || "N/A"}
+                    </span>
+                  </p>
+                  <p>
+                    <FaEnvelope className={styles.icon} />
+                    <span>Email</span>
+                    <span className={styles.contactValue}>
+                      {customerData?.email || "N/A"}
+                    </span>
+                  </p>
+                  <p>
+                    <FaMapMarkerAlt className={styles.icon} />
+                    <span>Address</span>
+                    <span className={styles.contactValue}>
+                      {customerData?.address || "N/A"}
+                    </span>
+                  </p>
+                  <p>
+                    <FaZipCode className={styles.icon} />
+                    <span>Zip Code</span>
+                    <span className={styles.contactValue}>
+                      {customerData?.zipCode || "N/A"}
+                    </span>
+                  </p>
+                  <p>
+                    <FaCreditCard className={styles.icon} />
+                    <span>Card ID</span>
+                    <span className={styles.contactValue}>
+                      {customerData?.cardId || "N/A"}
+                    </span>
+                  </p>
+                </>
+              ) : (
+                // Edit Mode
+                <form onSubmit={handleEditSubmit} className={styles.editForm}>
+                  <div className={styles.editFormGroup}>
+                    <label htmlFor="name">Name:</label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={editFormData.name}
+                      onChange={handleEditInputChange}
+                      required
+                      className={styles.editInput}
+                    />
+                  </div>
+                  <div className={styles.editFormGroup}>
+                    <label htmlFor="phone">Phone:</label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      value={editFormData.phone}
+                      onChange={handleEditInputChange}
+                      required
+                      className={styles.editInput}
+                    />
+                  </div>
+                  <div className={styles.editFormGroup}>
+                    <label htmlFor="email">Email:</label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={editFormData.email}
+                      onChange={handleEditInputChange}
+                      required
+                      className={styles.editInput}
+                    />
+                  </div>
+                  <div className={styles.editFormGroup}>
+                    <label htmlFor="address">Address:</label>
+                    <input
+                      type="text"
+                      id="address"
+                      name="address"
+                      value={editFormData.address}
+                      onChange={handleEditInputChange}
+                      required
+                      className={styles.editInput}
+                    />
+                  </div>
+                  <div className={styles.editFormGroup}>
+                    <label htmlFor="zipCode">Zip Code:</label>
+                    <input
+                      type="text"
+                      id="zipCode"
+                      name="zipCode"
+                      value={editFormData.zipCode}
+                      onChange={handleEditInputChange}
+                      required
+                      className={styles.editInput}
+                    />
+                  </div>
+                  <div className={styles.editFormGroup}>
+                    <label htmlFor="cardId">Card ID:</label>
+                    <input
+                      type="text"
+                      id="cardId"
+                      name="cardId"
+                      value={editFormData.cardId || ""}
+                      onChange={handleEditInputChange}
+                      className={styles.editInput}
+                    />
+                  </div>
+
+                  {editError && (
+                    <div className={styles.editError}>{editError}</div>
+                  )}
+
+                  {editSuccess && (
+                    <div className={styles.editSuccess}>
+                      Profile updated successfully!
+                    </div>
+                  )}
+
+                  <div className={styles.editFormButtons}>
+                    <button
+                      type="submit"
+                      disabled={editLoading}
+                      className={styles.editSaveButton}
+                    >
+                      {editLoading ? "Saving..." : "Save Changes"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleEditCancel}
+                      className={styles.editCancelButton}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
 
@@ -596,6 +785,132 @@ const Customer: React.FC = () => {
               >
                 {reviewSubmitting ? "Submitting..." : "Submit Review"}
               </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      {isEditMode && customerData && (
+        <div className={styles.editProfileOverlay}>
+          <div className={styles.editProfileModal}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Edit Profile</h2>
+              <button
+                className={styles.modalCloseButton}
+                onClick={() => setIsEditMode(false)}
+              >
+                <FaTimes />
+              </button>
+            </div>
+            <form onSubmit={handleEditSubmit}>
+              <div className={styles.modalBody}>
+                <div className={styles.formGroup}>
+                  <label htmlFor="name" className={styles.formLabel}>
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    className={styles.formInput}
+                    value={editFormData.name}
+                    onChange={handleEditInputChange}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="phone" className={styles.formLabel}>
+                    Phone
+                  </label>
+                  <input
+                    type="text"
+                    id="phone"
+                    name="phone"
+                    className={styles.formInput}
+                    value={editFormData.phone}
+                    onChange={handleEditInputChange}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="email" className={styles.formLabel}>
+                    Email
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    className={styles.formInput}
+                    value={editFormData.email}
+                    onChange={handleEditInputChange}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="address" className={styles.formLabel}>
+                    Address
+                  </label>
+                  <textarea
+                    id="address"
+                    name="address"
+                    className={styles.formTextarea}
+                    value={editFormData.address}
+                    onChange={handleEditInputChange}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="zipCode" className={styles.formLabel}>
+                    Zip Code
+                  </label>
+                  <input
+                    type="text"
+                    id="zipCode"
+                    name="zipCode"
+                    className={styles.formInput}
+                    value={editFormData.zipCode}
+                    onChange={handleEditInputChange}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label htmlFor="cardId" className={styles.formLabel}>
+                    Card ID
+                  </label>
+                  <input
+                    type="text"
+                    id="cardId"
+                    name="cardId"
+                    className={styles.formInput}
+                    value={editFormData.cardId}
+                    onChange={handleEditInputChange}
+                    required
+                  />
+                </div>
+              </div>
+              {editError && <p className={styles.editError}>{editError}</p>}
+              {editSuccess && (
+                <p className={styles.editSuccess}>
+                  Profile updated successfully!
+                </p>
+              )}
+              <div className={styles.modalFooter}>
+                <button
+                  type="submit"
+                  className={styles.saveButton}
+                  disabled={editLoading}
+                >
+                  {editLoading ? "Saving..." : "Save Changes"}
+                </button>
+                <button
+                  type="button"
+                  className={styles.cancelButton}
+                  onClick={() => setIsEditMode(false)}
+                >
+                  Cancel
+                </button>
+              </div>
             </form>
           </div>
         </div>

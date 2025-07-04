@@ -5,20 +5,20 @@ import {
   FiSettings,
   FiUsers,
   FiClipboard,
-  FiTrendingUp,
+  FiMessageCircle,
   FiDollarSign,
   FiClock,
   FiPhone,
-  FiCalendar,
+  FiTrendingUp,
   FiStar,
   FiMapPin,
   FiInfo,
-  FiAlertTriangle,
   FiCheckCircle,
   FiXCircle,
 } from "react-icons/fi";
 import Navbar from "../../Common/Components/Navbar/navbar";
-import { getMyRestaurant, Restaurant } from "./Restaurant.services";
+import { getMyRestaurant } from "./Restaurant.services";
+import { Restaurant } from "./types";
 
 const RestaurantOwnerPage: React.FC = () => {
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
@@ -395,16 +395,16 @@ const RestaurantOwnerPage: React.FC = () => {
           </Link>
 
           <Link
-            to="/RestaurantOwner-profile/analytics"
+            to="/RestaurantOwner-profile/review-management"
             className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow flex items-center border-l-4 border-indigo-500 group"
           >
             <div className="bg-indigo-100 p-3 rounded-full mr-4 group-hover:bg-indigo-200 transition-colors">
-              <FiTrendingUp className="text-2xl text-indigo-500" />
+              <FiMessageCircle className="text-2xl text-indigo-500" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold mb-1">Analytics</h2>
+              <h2 className="text-xl font-semibold mb-1">reviews</h2>
               <p className="text-gray-600">
-                View detailed business analytics and reports
+                View all customer reviews and feedback
               </p>
             </div>
           </Link>

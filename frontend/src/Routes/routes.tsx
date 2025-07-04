@@ -12,6 +12,7 @@ import OrderSuccessPage from "../Pages/restaurantMenu/OrderSuccessPage";
 import RestaurantOwnerPage from "../Pages/OwnerProfile/owner";
 import FoodManagementPage from "../Pages/OwnerProfile/FoodManagementPage";
 import OrderManagementPage from "../Pages/OwnerProfile/OrderManagmentPage";
+import ReviewManagementPage from "../Pages/OwnerProfile/ReviewManagementPage";
 
 export const routes = [
   {
@@ -110,6 +111,15 @@ export const routes = [
       </ProtectedRoute>
     ),
     name: "Order Management",
+  },
+  {
+    path: "/RestaurantOwner-profile/review-management",
+    element: (
+      <ProtectedRoute requiredRole="RestaurantOwner">
+        <ReviewManagementPage />
+      </ProtectedRoute>
+    ),
+    name: "Review Management",
   },
   {
     path: "/order-success",
