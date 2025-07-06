@@ -198,56 +198,58 @@ const RestaurantManagement: React.FC = () => {
 
   const getCategoryColor = (category: string): string => {
     const categoryMap: Record<string, string> = {
-      'Fast food': 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)',
-      'Grills': 'linear-gradient(135deg, #F44336 0%, #D32F2F 100%)',
-      'Asian': 'linear-gradient(135deg, #4CAF50 0%, #388E3C 100%)',
-      'Japanese': 'linear-gradient(135deg, #E91E63 0%, #C2185B 100%)',
-      'string': 'linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)',
+      "Fast food": "linear-gradient(135deg, #FF9800 0%, #F57C00 100%)",
+      Grills: "linear-gradient(135deg, #F44336 0%, #D32F2F 100%)",
+      Asian: "linear-gradient(135deg, #4CAF50 0%, #388E3C 100%)",
+      Japanese: "linear-gradient(135deg, #E91E63 0%, #C2185B 100%)",
+      string: "linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%)",
     };
-    
+
     // Normalize the category for case-insensitive matching
     const normalizedCategory = category.toLowerCase();
-    
+
     // Find a matching category (partial match)
-    const matchedCategory = Object.keys(categoryMap).find(key => 
+    const matchedCategory = Object.keys(categoryMap).find((key) =>
       normalizedCategory.includes(key.toLowerCase())
     );
-    
-    return matchedCategory ? categoryMap[matchedCategory] : 'linear-gradient(135deg, #a70000 0%, #d32f2f 100%)';
+
+    return matchedCategory
+      ? categoryMap[matchedCategory]
+      : "linear-gradient(135deg, #a70000 0%, #d32f2f 100%)";
   };
 
   const getCategoryBgColor = (category: string): string => {
     const categoryMap: Record<string, string> = {
-      'Fast food': '#FFF3E0',
-      'Grills': '#FFEBEE',
-      'Asian': '#E8F5E9',
-      'Japanese': '#FCE4EC',
-      'string': '#F3E5F5',
+      "Fast food": "#FFF3E0",
+      Grills: "#FFEBEE",
+      Asian: "#E8F5E9",
+      Japanese: "#FCE4EC",
+      string: "#F3E5F5",
     };
-    
+
     const normalizedCategory = category.toLowerCase();
-    const matchedCategory = Object.keys(categoryMap).find(key => 
+    const matchedCategory = Object.keys(categoryMap).find((key) =>
       normalizedCategory.includes(key.toLowerCase())
     );
-    
-    return matchedCategory ? categoryMap[matchedCategory] : '#ebf4ff';
+
+    return matchedCategory ? categoryMap[matchedCategory] : "#ebf4ff";
   };
 
   const getCategoryTextColor = (category: string): string => {
     const categoryMap: Record<string, string> = {
-      'Fast food': '#E65100',
-      'Grills': '#C62828',
-      'Asian': '#2E7D32',
-      'Japanese': '#AD1457',
-      'string': '#6A1B9A',
+      "Fast food": "#E65100",
+      Grills: "#C62828",
+      Asian: "#2E7D32",
+      Japanese: "#AD1457",
+      string: "#6A1B9A",
     };
-    
+
     const normalizedCategory = category.toLowerCase();
-    const matchedCategory = Object.keys(categoryMap).find(key => 
+    const matchedCategory = Object.keys(categoryMap).find((key) =>
       normalizedCategory.includes(key.toLowerCase())
     );
-    
-    return matchedCategory ? categoryMap[matchedCategory] : '#3182ce';
+
+    return matchedCategory ? categoryMap[matchedCategory] : "#3182ce";
   };
 
   return (
@@ -286,10 +288,14 @@ const RestaurantManagement: React.FC = () => {
               {restaurants.length > 0 ? (
                 restaurants.map((restaurant) => (
                   <tr key={restaurant.id}>
-
                     <td>
                       <div className={styles.nameCell}>
-                        <div className={styles.avatarCircle} style={{ background: getCategoryColor(restaurant.category) }}>
+                        <div
+                          className={styles.avatarCircle}
+                          style={{
+                            background: getCategoryColor(restaurant.category),
+                          }}
+                        >
                           {restaurant.name.charAt(0).toUpperCase()}
                         </div>
                         <span>{restaurant.name}</span>
@@ -302,11 +308,13 @@ const RestaurantManagement: React.FC = () => {
                       </div>
                     </td>
                     <td>
-                      <span 
+                      <span
                         className={styles.restaurantBadge}
-                        style={{ 
-                          backgroundColor: getCategoryBgColor(restaurant.category),
-                          color: getCategoryTextColor(restaurant.category)
+                        style={{
+                          backgroundColor: getCategoryBgColor(
+                            restaurant.category
+                          ),
+                          color: getCategoryTextColor(restaurant.category),
                         }}
                       >
                         {restaurant.category}
@@ -326,7 +334,6 @@ const RestaurantManagement: React.FC = () => {
                     </td>
                     <td>
                       <div className={styles.actionButtons}>
-
                         <button className={styles.editButton}>Edit</button>
                         <button
                           className={styles.deleteButton}
@@ -340,19 +347,18 @@ const RestaurantManagement: React.FC = () => {
                 ))
               ) : (
                 <tr>
-t
+                  t
                   <td colSpan={5} className={styles.emptyTableMessage}>
                     <div className={styles.noDataContainer}>
                       <div className={styles.noDataIcon}>🍽️</div>
                       <p>No restaurants found</p>
-                      <button 
+                      <button
                         className={`${styles.actionButton} ${styles.primaryButton}`}
                         onClick={() => setShowAddModal(true)}
                       >
                         Add Your First Restaurant
                       </button>
                     </div>
-
                   </td>
                 </tr>
               )}

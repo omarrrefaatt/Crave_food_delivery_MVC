@@ -1,4 +1,4 @@
-import { Restaurant, Manager, createManager, DashboardStats } from "./types";
+import { Restaurant, Manager, createManager, ApiResponse } from "./types";
 
 const restaurantAPI = import.meta.env.VITE_GET_ALL_RESTAURANTS_API;
 const orderAPI = import.meta.env.VITE_USER_ORDERS_API;
@@ -335,7 +335,7 @@ export const deleteManager = async (id: string): Promise<void> => {
   }
 };
 
-export const getStatistics = async (): Promise<DashboardStats> => {
+export const getStatistics = async (): Promise<ApiResponse> => {
   try {
     const response = await fetch(`${statisticsAPI}`, {
       method: "GET",

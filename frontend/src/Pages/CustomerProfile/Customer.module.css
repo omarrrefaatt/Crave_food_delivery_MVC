@@ -1,11 +1,9 @@
-/* Customer.module.css - Enhanced Version */
 :root {
   --primary-color: #a70000;
   --primary-light: #ecf5ff;
   --primary-dark: #550000;
   --secondary-color: #f9fafb;
   --accent-color: #10b981;
-
   --text-light: #6b7280;
   --border-color: #e5e7eb;
   --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -84,7 +82,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.25rem;
-  background-color: var(--primary-light);
+  background-color: white;
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -154,7 +152,7 @@
   align-items: center;
   margin: 0.8rem 0;
   padding: 0.8rem;
-  background-color: var(--secondary-color);
+  background-color: white;
   border-radius: 8px;
   color: var(--text-light);
   font-size: 0.9rem;
@@ -381,7 +379,7 @@
   list-style-type: none;
   padding: 1.25rem;
   margin: 0;
-  background-color: var(--secondary-color);
+  background-color: whitesmoke;
 }
 
 .orderItems li {
@@ -389,6 +387,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem;
+  border: 1px solid var(--border-color);
   background-color: white;
   margin-bottom: 0.5rem;
   border-radius: 8px;
@@ -406,8 +405,8 @@
 }
 
 .quantityBadge {
-  background-color: var(--primary-light);
-  color: var(--primary-dark);
+  background-color: #a70000;
+  color: white;
   border-radius: 6px;
   padding: 0.25rem 0.5rem;
   font-weight: 600;
@@ -454,9 +453,9 @@
   border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 500;
-  background-color: var(--primary-light);
+  background-color: #a70000;
   border: none;
-  color: var(--primary-color);
+  color: white;
   cursor: pointer;
   transition: var(--transition);
 }

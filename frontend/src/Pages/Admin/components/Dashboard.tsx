@@ -22,19 +22,26 @@ import {
   UserCheck,
 } from "lucide-react";
 import { getStatistics } from "../services"; // Adjust the import path as necessary
+import {
+  StatsData,
+  ApiResponse,
+  CategoryData,
+  UserTypeData,
+  RevenueData,
+  DashboardProps,
+  ChartTooltipProps,
+} from "../types";
 
-const Dashboard = () => {
-  const [loading, setLoading] = useState(false);
-  const [dashboardLoading, setDashboardLoading] = useState(true);
-  const [statsData, setStatsData] = useState(null);
-
-  // Your API response data structure
+const Dashboard: React.FC<DashboardProps> = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [dashboardLoading, setDashboardLoading] = useState<boolean>(true);
+  const [statsData, setStatsData] = useState<StatsData | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (): Promise<void> => {
       setDashboardLoading(true);
       try {
-        const response = await getStatistics();
+        const response: ApiResponse = await getStatistics();
         setStatsData(response.$values[0]);
         setDashboardLoading(false);
       } catch (error) {
@@ -45,14 +52,14 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  const handleNavigation = (path) => {
+  const handleNavigation = (path: string): void => {
     console.log(`Navigate to: ${path}`);
   };
 
   // Prepare data for charts
-  const categoryData = statsData
+  const categoryData: CategoryData[] = statsData
     ? Object.entries(statsData.categoriesNumberOfRestaurts).map(
-        ([name, value]) => ({
+        ([name, value]): CategoryData => ({
           name: name.charAt(0).toUpperCase() + name.slice(1),
           value: value,
           percentage: ((value / statsData.totalRestaurants) * 100).toFixed(1),
@@ -60,7 +67,7 @@ const Dashboard = () => {
       )
     : [];
 
-  const userTypeData = statsData
+  const userTypeData: UserTypeData[] = statsData
     ? [
         { name: "Clients", value: statsData.totalClients, color: "#dc2626" },
         { name: "Managers", value: statsData.totalManagers, color: "#22c55e" },
@@ -68,7 +75,7 @@ const Dashboard = () => {
       ]
     : [];
 
-  const revenueData = statsData
+  const revenueData: RevenueData[] = statsData
     ? [
         { name: "Total Revenue", value: statsData.totalRevenue },
         { name: "Avg Order Value", value: statsData.averageOrderValue },
@@ -82,7 +89,7 @@ const Dashboard = () => {
     : [];
 
   // Dark mode colors
-  const COLORS = [
+  const COLORS: string[] = [
     "#dc2626",
     "#22c55e",
     "#ffb300",
@@ -91,6 +98,13 @@ const Dashboard = () => {
     "#06b6d4",
     "#84cc16",
   ];
+
+  const tooltipStyle: ChartTooltipProps = {
+    backgroundColor: "#1e293b",
+    border: "1px solid #475569",
+    borderRadius: "8px",
+    color: "#ffffff",
+  };
 
   if (loading || dashboardLoading) {
     return (
@@ -320,7 +334,13 @@ const Dashboard = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percentage }) => `${name} (${percentage}%)`}
+                  label={({
+                    name,
+                    percentage,
+                  }: {
+                    name: string;
+                    percentage: string;
+                  }) => `${name} (${percentage}%)`}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -332,14 +352,7 @@ const Dashboard = () => {
                     />
                   ))}
                 </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#1e293b",
-                    border: "1px solid #475569",
-                    borderRadius: "8px",
-                    color: "#ffffff",
-                  }}
-                />
+                <Tooltip contentStyle={tooltipStyle} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -354,14 +367,7 @@ const Dashboard = () => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
                 <XAxis dataKey="name" tick={{ fill: "#94a3b8" }} />
                 <YAxis tick={{ fill: "#94a3b8" }} />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#1e293b",
-                    border: "1px solid #475569",
-                    borderRadius: "8px",
-                    color: "#ffffff",
-                  }}
-                />
+                <Tooltip contentStyle={tooltipStyle} />
                 <Bar dataKey="value" fill="#dc2626" />
               </BarChart>
             </ResponsiveContainer>
@@ -379,16 +385,11 @@ const Dashboard = () => {
               <XAxis dataKey="name" tick={{ fill: "#94a3b8" }} />
               <YAxis tick={{ fill: "#94a3b8" }} />
               <Tooltip
-                formatter={(value) => [
-                  `$${Number(value).toLocaleString()}`,
+                formatter={(value: number) => [
+                  `$${value.toLocaleString()}`,
                   "Value",
                 ]}
-                contentStyle={{
-                  backgroundColor: "#1e293b",
-                  border: "1px solid #475569",
-                  borderRadius: "8px",
-                  color: "#ffffff",
-                }}
+                contentStyle={tooltipStyle}
               />
               <Bar dataKey="value" fill="#22c55e" />
             </BarChart>
