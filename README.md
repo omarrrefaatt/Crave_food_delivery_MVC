@@ -1,5 +1,7 @@
 # 🍔 Crave Food Delivery Platform
 
+<img width="1200" height="675" alt="Red and White Simple Delivery Logo 2" src="https://github.com/user-attachments/assets/c838ef98-4140-49bc-88a6-ea4cf20d3d7e" />
+
 <div align="center">
   
   ### Delivering Delicious Meals Right to Your Doorstep
@@ -418,7 +420,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
   
   ### 🌟 Star this repository if you find it helpful!
   
-  Made with ❤️ by the Crave team
-  
 </div>
-![Red and White Simple Delivery Logo](https://github.com/user-attachments/assets/515b9a13-3d2c-4637-9929-92ecca37f9b4)
